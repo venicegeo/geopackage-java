@@ -1,10 +1,10 @@
 package mil.nga.geopackage.tiles.features;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.extension.link.FeatureTileTableLinker;
-import mil.nga.geopackage.projection.Projection;
 import mil.nga.geopackage.tiles.TileGenerator;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
 
 /**
  * Creates a set of tiles within a GeoPackage by generating tiles from features
@@ -45,7 +45,7 @@ public class FeatureTileGenerator extends TileGenerator {
 	 */
 	public FeatureTileGenerator(GeoPackage geoPackage, String tableName,
 			FeatureTiles featureTiles, int minZoom, int maxZoom,
-			BoundingBox boundingBox, Projection projection) {
+			GeometryEnvelope boundingBox, Projection projection) {
 		super(geoPackage, tableName, minZoom, maxZoom, boundingBox, projection);
 		this.featureTiles = featureTiles;
 	}

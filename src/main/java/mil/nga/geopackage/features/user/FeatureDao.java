@@ -1,16 +1,16 @@
 package mil.nga.geopackage.features.user;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackageException;
 import mil.nga.geopackage.core.contents.Contents;
 import mil.nga.geopackage.core.srs.SpatialReferenceSystem;
 import mil.nga.geopackage.db.GeoPackageConnection;
 import mil.nga.geopackage.features.columns.GeometryColumns;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
 import mil.nga.geopackage.user.UserDao;
-import mil.nga.wkb.geom.GeometryType;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.GeometryType;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
 
 /**
  * Feature DAO for reading feature user data tables
@@ -64,12 +64,12 @@ public class FeatureDao extends
 	 * {@inheritDoc}
 	 */
 	@Override
-	public BoundingBox getBoundingBox() {
+	public GeometryEnvelope getBoundingBox() {
 		Contents contents = geometryColumns.getContents();
 		Projection contentsProjection = ProjectionFactory
 				.getProjection(contents.getSrs());
 
-		BoundingBox boundingBox = contents.getBoundingBox();
+		GeometryEnvelope boundingBox = contents.getBoundingBox();
 		if (projection.getEpsg() != contentsProjection.getEpsg()) {
 			ProjectionTransform transform = contentsProjection
 					.getTransformation(projection);

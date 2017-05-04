@@ -9,10 +9,10 @@ import java.sql.SQLException;
 import javax.imageio.ImageIO;
 
 import junit.framework.TestCase;
-import mil.nga.geopackage.BoundingBox;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
 import mil.nga.geopackage.test.TestConstants;
 import mil.nga.geopackage.test.TestUtils;
 import mil.nga.geopackage.test.TilesGeoPackageTestCase;
@@ -66,9 +66,9 @@ public class TileCreatorImageTest extends TilesGeoPackageTestCase {
 		TileCreator wgs84TileCreator = new TileCreator(tileDao, width, height,
 				wgs84, "png");
 
-		BoundingBox webMercatorBoundingBox = TileBoundingBoxUtils
+		GeometryEnvelope webMercatorBoundingBox = TileBoundingBoxUtils
 				.getWebMercatorBoundingBox(0, 4, 4);
-		BoundingBox wgs84BoundingBox = webMercator.getTransformation(wgs84)
+		GeometryEnvelope wgs84BoundingBox = webMercator.getTransformation(wgs84)
 				.transform(webMercatorBoundingBox);
 
 		TestCase.assertTrue(webMeractorTileCreator
@@ -254,7 +254,7 @@ public class TileCreatorImageTest extends TilesGeoPackageTestCase {
 			// expected
 		}
 
-		BoundingBox wgs84BoundingBox = new BoundingBox(-180, -157.5, 45, 67.5);
+		GeometryEnvelope wgs84BoundingBox = new GeometryEnvelope(-180d, 45d, -157.5d, 67.5d);
 
 		TestCase.assertTrue(wgs84TileCreator.hasTile(wgs84BoundingBox));
 

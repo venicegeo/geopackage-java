@@ -6,16 +6,16 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.GeoPackageException;
 import mil.nga.geopackage.manager.GeoPackageManager;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
 import mil.nga.geopackage.tiles.TileBoundingBoxUtils;
 import mil.nga.geopackage.tiles.UrlTileGenerator;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
 
 /**
  * URL Tile Generator main method for command line tile generation
@@ -143,7 +143,7 @@ public class URLTileGen {
 	/**
 	 * Bounding box
 	 */
-	private static BoundingBox boundingBox = null;
+	private static GeometryEnvelope boundingBox = null;
 
 	/**
 	 * Bounding Box EPSG
@@ -238,8 +238,10 @@ public class URLTileGen {
 							double minLat = Double.valueOf(bboxParts[1]);
 							double maxLon = Double.valueOf(bboxParts[2]);
 							double maxLat = Double.valueOf(bboxParts[3]);
-							boundingBox = new BoundingBox(minLon, maxLon,
-									minLat, maxLat);
+							boundingBox = new GeometryEnvelope(minLon, 
+									minLat,
+									maxLon,
+									maxLat);
 						}
 					} else {
 						valid = false;
@@ -349,7 +351,7 @@ public class URLTileGen {
 		if (boundingBox != null) {
 			bboxProjection = ProjectionFactory.getProjection(epsg);
 		} else {
-			boundingBox = new BoundingBox();
+			boundingBox = new GeometryEnvelope();
 			bboxProjection = ProjectionFactory
 					.getProjection(ProjectionConstants.EPSG_WORLD_GEODETIC_SYSTEM);
 		}
@@ -364,7 +366,7 @@ public class URLTileGen {
 		Projection urlProjection = ProjectionFactory.getProjection(urlEpsg);
 		ProjectionTransform transform = bboxProjection
 				.getTransformation(urlProjection);
-		BoundingBox urlBoundingBox = transform.transform(boundingBox);
+		GeometryEnvelope urlBoundingBox = transform.transform(boundingBox);
 
 		UrlTileGenerator tileGenerator = new UrlTileGenerator(geoPackage,
 				tileTable, url, minZoom, maxZoom, urlBoundingBox, urlProjection);

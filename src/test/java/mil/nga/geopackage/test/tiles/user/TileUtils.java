@@ -11,13 +11,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import junit.framework.TestCase;
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.GeoPackageException;
 import mil.nga.geopackage.db.SQLUtils;
 import mil.nga.geopackage.db.SQLiteQueryBuilder;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
 import mil.nga.geopackage.test.TestUtils;
 import mil.nga.geopackage.test.geom.GeoPackageGeometryDataUtils;
 import mil.nga.geopackage.tiles.TileBoundingBoxUtils;
@@ -801,16 +801,16 @@ public class TileUtils {
 
 					long zoomLevel = dao.getZoomLevel(width);
 
-					BoundingBox setProjectionBoundingBox = tileMatrixSet
+					GeometryEnvelope setProjectionBoundingBox = tileMatrixSet
 							.getBoundingBox();
-					BoundingBox setWebMercatorBoundingBox = ProjectionFactory
+					GeometryEnvelope setWebMercatorBoundingBox = ProjectionFactory
 							.getProjection(tileMatrixSet.getSrs())
 							.getTransformation(
 									ProjectionConstants.EPSG_WEB_MERCATOR)
 							.transform(setProjectionBoundingBox);
-					BoundingBox boundingBox = new BoundingBox(-180.0, 180.0,
-							-90.0, 90.0);
-					BoundingBox webMercatorBoundingBox = ProjectionFactory
+					GeometryEnvelope boundingBox = new GeometryEnvelope(-180.0, -90.0, 
+							180.0, 90.0);
+					GeometryEnvelope webMercatorBoundingBox = ProjectionFactory
 							.getProjection(
 									ProjectionConstants.EPSG_WORLD_GEODETIC_SYSTEM)
 							.getTransformation(
@@ -839,7 +839,7 @@ public class TileUtils {
 					double minLon = ((maxLon + 180.0) * Math.random()) - 180.0;
 					double maxLat = (180.0 * Math.random()) - 90.0;
 					double minLat = ((maxLon + 90.0) * Math.random()) - 90.0;
-					boundingBox = new BoundingBox(minLon, maxLon, minLat,
+					boundingBox = new GeometryEnvelope(minLon, minLat, maxLon,
 							maxLat);
 					webMercatorBoundingBox = ProjectionFactory
 							.getProjection(
@@ -903,7 +903,7 @@ public class TileUtils {
 				TileDao dao = geoPackage.getTileDao(tileMatrixSet);
 				TestCase.assertNotNull(dao);
 
-				BoundingBox totalBoundingBox = tileMatrixSet.getBoundingBox();
+				GeometryEnvelope totalBoundingBox = tileMatrixSet.getBoundingBox();
 				TestCase.assertEquals(totalBoundingBox, dao.getBoundingBox());
 
 				List<TileMatrix> tileMatrices = dao.getTileMatrices();
@@ -914,7 +914,7 @@ public class TileUtils {
 					int count = dao.count(zoomLevel);
 					TileGrid totalTileGrid = dao.getTileGrid(zoomLevel);
 					TileGrid tileGrid = dao.queryForTileGrid(zoomLevel);
-					BoundingBox boundingBox = dao.getBoundingBox(zoomLevel);
+					GeometryEnvelope boundingBox = dao.getBoundingBox(zoomLevel);
 
 					if (totalTileGrid.equals(tileGrid)) {
 						TestCase.assertEquals(totalBoundingBox, boundingBox);
@@ -962,7 +962,7 @@ public class TileUtils {
 					TestCase.assertEquals(count - deleted, updatedCount);
 
 					TileGrid updatedTileGrid = dao.queryForTileGrid(zoomLevel);
-					BoundingBox updatedBoundingBox = dao
+					GeometryEnvelope updatedBoundingBox = dao
 							.getBoundingBox(zoomLevel);
 
 					if (tileMatrix.getMatrixHeight() <= 2
@@ -982,7 +982,7 @@ public class TileUtils {
 						TestCase.assertEquals(tileGrid.getMaxY() - 1,
 								updatedTileGrid.getMaxY());
 
-						BoundingBox tileGridBoundingBox = TileBoundingBoxUtils
+						GeometryEnvelope tileGridBoundingBox = TileBoundingBoxUtils
 								.getBoundingBox(totalBoundingBox, tileMatrix,
 										updatedTileGrid);
 						TestCase.assertEquals(tileGridBoundingBox,

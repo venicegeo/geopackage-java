@@ -26,17 +26,18 @@ import mil.nga.geopackage.test.TestUtils;
 import mil.nga.geopackage.test.geom.GeoPackageGeometryDataUtils;
 import mil.nga.geopackage.user.ColumnValue;
 import mil.nga.geopackage.user.UserCoreResultUtils;
-import mil.nga.wkb.geom.Geometry;
-import mil.nga.wkb.geom.GeometryCollection;
-import mil.nga.wkb.geom.GeometryType;
-import mil.nga.wkb.geom.LineString;
-import mil.nga.wkb.geom.MultiLineString;
-import mil.nga.wkb.geom.MultiPoint;
-import mil.nga.wkb.geom.MultiPolygon;
-import mil.nga.wkb.geom.Point;
-import mil.nga.wkb.geom.Polygon;
-import mil.nga.wkb.io.ByteReader;
-import mil.nga.wkb.io.WkbGeometryReader;
+import mil.nga.sf.Geometry;
+import mil.nga.sf.GeometryCollection;
+import mil.nga.sf.GeometryType;
+import mil.nga.sf.LineString;
+import mil.nga.sf.MultiLineString;
+import mil.nga.sf.MultiPoint;
+import mil.nga.sf.MultiPolygon;
+import mil.nga.sf.Point;
+import mil.nga.sf.Polygon;
+import mil.nga.sf.Position;
+import mil.nga.sf.util.ByteReader;
+import mil.nga.sf.wkb.GeometryReader;
 
 /**
  * Features Utility test methods
@@ -45,10 +46,10 @@ import mil.nga.wkb.io.WkbGeometryReader;
  */
 public class FeatureUtils {
 
-	private static final double POINT_UPDATED_X = 45.11111;
-	private static final double POINT_UPDATED_Y = 89.99999;
-	private static final double POINT_UPDATED_Z = 10.55555;
-	private static final double POINT_UPDATED_M = 2.87878;
+	private static final double POSITION_UPDATED_X = 45.11111;
+	private static final double POSITION_UPDATED_Y = 89.99999;
+	private static final double POSITION_UPDATED_Z = 10.55555;
+	private static final double POSITION_UPDATED_M = 2.87878;
 
 	/**
 	 * Test read
@@ -111,7 +112,7 @@ public class FeatureUtils {
 						ByteReader wkbReader = new ByteReader(wkbBytes);
 						wkbReader.setByteOrder(geoPackageGeometryData
 								.getByteOrder());
-						Geometry geometryFromBytes = WkbGeometryReader
+						Geometry geometryFromBytes = GeometryReader
 								.readGeometry(wkbReader);
 						TestCase.assertNotNull(geometryFromBytes);
 						TestCase.assertEquals(geometry.getGeometryType(),
@@ -127,7 +128,7 @@ public class FeatureUtils {
 						ByteReader wkbReader2 = new ByteReader(wkbBytes2);
 						wkbReader2.setByteOrder(geoPackageGeometryData
 								.getByteOrder());
-						Geometry geometryFromBytes2 = WkbGeometryReader
+						Geometry geometryFromBytes2 = GeometryReader
 								.readGeometry(wkbReader2);
 						TestCase.assertNotNull(geometryFromBytes2);
 						TestCase.assertEquals(geometry.getGeometryType(),
@@ -386,6 +387,27 @@ public class FeatureUtils {
 	}
 
 	/**
+	 * Validate Position
+	 * 
+	 * @param topGeometry
+	 * @param point
+	 */
+	private static void validatePosition(Geometry topGeometry, Position position) {
+
+		if (topGeometry.hasZ()) {
+			TestCase.assertNotNull(position.getZ());
+		} else {
+			TestCase.assertNull(position.getZ());
+		}
+
+		if (topGeometry.hasM()) {
+			TestCase.assertNotNull(position.getM());
+		} else {
+			TestCase.assertNull(position.getM());
+		}
+	}
+
+	/**
 	 * Validate Point
 	 * 
 	 * @param topGeometry
@@ -393,21 +415,11 @@ public class FeatureUtils {
 	 */
 	private static void validatePoint(Geometry topGeometry, Point point) {
 
-		TestCase.assertEquals(GeometryType.POINT, point.getGeometryType());
-
 		validateZAndM(topGeometry, point);
 
-		if (topGeometry.hasZ()) {
-			TestCase.assertNotNull(point.getZ());
-		} else {
-			TestCase.assertNull(point.getZ());
-		}
+		TestCase.assertEquals(GeometryType.POINT, point.getGeometryType());
 
-		if (topGeometry.hasM()) {
-			TestCase.assertNotNull(point.getM());
-		} else {
-			TestCase.assertNull(point.getM());
-		}
+		validatePosition(topGeometry, point.getPosition());
 	}
 
 	/**
@@ -424,8 +436,8 @@ public class FeatureUtils {
 
 		validateZAndM(topGeometry, lineString);
 
-		for (Point point : lineString.getPoints()) {
-			validatePoint(topGeometry, point);
+		for (Position position : lineString.getPositions()) {
+			validatePosition(topGeometry, position);
 		}
 
 	}
@@ -462,8 +474,8 @@ public class FeatureUtils {
 
 		validateZAndM(topGeometry, multiPoint);
 
-		for (Point point : multiPoint.getPoints()) {
-			validatePoint(topGeometry, point);
+		for (Position position : multiPoint.getPositions()) {
+			validatePosition(topGeometry, position);
 		}
 
 	}
@@ -598,12 +610,12 @@ public class FeatureUtils {
 										break;
 									case MULTIPOINT:
 										MultiPoint multiPoint = (MultiPoint) geometry;
-										if (multiPoint.numPoints() > 1) {
-											multiPoint.getPoints().remove(0);
+										if (multiPoint.numPositions() > 1) {
+											multiPoint.getPositions().remove(0);
 										}
-										for (Point multiPointPoint : multiPoint
-												.getPoints()) {
-											updatePoint(multiPointPoint);
+										List<Position> positions = multiPoint.getPositions();
+										for (int inx = 0; inx < positions.size(); inx++){
+											positions.set(inx, updatedPosition(multiPoint));
 										}
 										break;
 
@@ -896,17 +908,17 @@ public class FeatureUtils {
 
 						case POINT:
 							Point point = (Point) readGeometry;
-							validateUpdatedPoint(point);
+							validateUpdatedPosition(point.getPosition());
 							break;
 
 						case MULTIPOINT:
 							MultiPoint originalMultiPoint = (MultiPoint) geometry;
 							MultiPoint multiPoint = (MultiPoint) readGeometry;
 							TestCase.assertEquals(
-									originalMultiPoint.numPoints(),
-									multiPoint.numPoints());
-							for (Point multiPointPoint : multiPoint.getPoints()) {
-								validateUpdatedPoint(multiPointPoint);
+									originalMultiPoint.numPositions(),
+									multiPoint.numPositions());
+							for (Position multiPointPosition : multiPoint.getPositions()) {
+								validateUpdatedPosition(multiPointPosition);
 							}
 							break;
 
@@ -936,19 +948,24 @@ public class FeatureUtils {
 	}
 
 	/**
+	 * Create a position with dimensions based on the geometry provided
+	 * 
+	 * @param seed
+	 * @return Position
+	 */
+	private static Position updatedPosition(Geometry seed) {
+		return new Position(POSITION_UPDATED_X, 
+				POSITION_UPDATED_Y, 
+				seed.hasZ() ? POSITION_UPDATED_Z : null,
+				seed.hasM() ? POSITION_UPDATED_M : null);
+	}
+	/**
 	 * Update a point
 	 * 
 	 * @param point
 	 */
 	private static void updatePoint(Point point) {
-		point.setX(POINT_UPDATED_X);
-		point.setY(POINT_UPDATED_Y);
-		if (point.hasZ()) {
-			point.setZ(POINT_UPDATED_Z);
-		}
-		if (point.hasM()) {
-			point.setM(POINT_UPDATED_M);
-		}
+		point.setPosition(updatedPosition(point));
 	}
 
 	/**
@@ -956,14 +973,14 @@ public class FeatureUtils {
 	 * 
 	 * @param point
 	 */
-	private static void validateUpdatedPoint(Point point) {
-		TestCase.assertEquals(POINT_UPDATED_X, point.getX());
-		TestCase.assertEquals(POINT_UPDATED_Y, point.getY());
-		if (point.hasZ()) {
-			TestCase.assertEquals(POINT_UPDATED_Z, point.getZ());
+	private static void validateUpdatedPosition(Position position) {
+		TestCase.assertEquals(POSITION_UPDATED_X, position.getX());
+		TestCase.assertEquals(POSITION_UPDATED_Y, position.getY());
+		if (position.hasZ()) {
+			TestCase.assertEquals(POSITION_UPDATED_Z, position.getZ());
 		}
-		if (point.hasM()) {
-			TestCase.assertEquals(POINT_UPDATED_M, point.getM());
+		if (position.hasM()) {
+			TestCase.assertEquals(POSITION_UPDATED_M, position.getM());
 		}
 	}
 

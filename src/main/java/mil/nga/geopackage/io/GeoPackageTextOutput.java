@@ -1,12 +1,12 @@
 package mil.nga.geopackage.io;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.core.contents.Contents;
 import mil.nga.geopackage.core.srs.SpatialReferenceSystem;
 import mil.nga.geopackage.tiles.matrix.TileMatrix;
 import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
 import mil.nga.geopackage.tiles.user.TileDao;
+import mil.nga.sf.GeometryEnvelope;
 
 /**
  * Builds readable text output from a GeoPackage
@@ -75,7 +75,7 @@ public class GeoPackageTextOutput {
 			if (tileMatrix != null) {
 				output.append("\n\n").append(textOutput(tileMatrix));
 				output.append("\n\tTiles: " + tileDao.count(zoom));
-				BoundingBox boundingBox = tileDao.getBoundingBox(zoom);
+				GeometryEnvelope boundingBox = tileDao.getBoundingBox(zoom);
 				output.append("\n\tTile Bounds: \n").append(
 						textOutput(boundingBox));
 			}
@@ -91,7 +91,7 @@ public class GeoPackageTextOutput {
 	 *            spatial reference system
 	 * @return text
 	 */
-	public String textOutput(SpatialReferenceSystem srs) {
+	public String textOutput(mil.nga.sf.srs.SpatialReferenceSystem srs) {
 		StringBuilder output = new StringBuilder();
 		output.append("\tSRS " + SpatialReferenceSystem.COLUMN_ORGANIZATION
 				+ ": " + srs.getOrganization());
@@ -192,7 +192,7 @@ public class GeoPackageTextOutput {
 	 *            bounding box
 	 * @return text
 	 */
-	public String textOutput(BoundingBox boundingBox) {
+	public String textOutput(GeometryEnvelope boundingBox) {
 		StringBuilder output = new StringBuilder();
 		output.append("\tMin Longitude: " + boundingBox.getMinLongitude());
 		output.append("\n\tMin Latitude: " + boundingBox.getMinLatitude());

@@ -10,14 +10,14 @@ import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.GeoPackageException;
 import mil.nga.geopackage.io.GeoPackageIOUtils;
 import mil.nga.geopackage.io.TileFormatType;
-import mil.nga.geopackage.projection.Projection;
 import mil.nga.geopackage.property.GeoPackageJavaProperties;
 import mil.nga.geopackage.property.JavaPropertyConstants;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
 
 /**
  * Creates a set of tiles within a GeoPackage by downloading the tiles from a
@@ -130,7 +130,7 @@ public class UrlTileGenerator extends TileGenerator {
 	 * @since 1.2.0
 	 */
 	public UrlTileGenerator(GeoPackage geoPackage, String tableName,
-			String tileUrl, int minZoom, int maxZoom, BoundingBox boundingBox,
+			String tileUrl, int minZoom, int maxZoom, GeometryEnvelope boundingBox,
 			Projection projection) {
 		super(geoPackage, tableName, minZoom, maxZoom, boundingBox, projection);
 
@@ -257,7 +257,7 @@ public class UrlTileGenerator extends TileGenerator {
 	 */
 	private String replaceBoundingBox(String url, int z, long x, long y) {
 
-		BoundingBox boundingBox = TileBoundingBoxUtils.getProjectedBoundingBox(
+		GeometryEnvelope boundingBox = TileBoundingBoxUtils.getProjectedBoundingBox(
 				projection, x, y, z);
 
 		url = replaceBoundingBox(url, boundingBox);
@@ -272,7 +272,7 @@ public class UrlTileGenerator extends TileGenerator {
 	 * @param boundingBox
 	 * @return
 	 */
-	private String replaceBoundingBox(String url, BoundingBox boundingBox) {
+	private String replaceBoundingBox(String url, GeometryEnvelope boundingBox) {
 
 		url = url.replaceAll(MIN_LAT_VARIABLE,
 				String.valueOf(boundingBox.getMinLatitude()));

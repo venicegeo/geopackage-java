@@ -7,7 +7,6 @@ import java.awt.image.BufferedImage;
 import java.sql.SQLException;
 import java.util.Date;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.core.contents.Contents;
 import mil.nga.geopackage.core.contents.ContentsDao;
@@ -15,15 +14,18 @@ import mil.nga.geopackage.features.columns.GeometryColumns;
 import mil.nga.geopackage.features.user.FeatureDao;
 import mil.nga.geopackage.features.user.FeatureRow;
 import mil.nga.geopackage.geom.GeoPackageGeometryData;
-import mil.nga.geopackage.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionConstants;
 import mil.nga.geopackage.schema.TableColumnKey;
 import mil.nga.geopackage.tiles.features.DefaultFeatureTiles;
 import mil.nga.geopackage.tiles.features.FeatureTilePointIcon;
 import mil.nga.geopackage.tiles.features.FeatureTiles;
-import mil.nga.wkb.geom.GeometryType;
-import mil.nga.wkb.geom.LineString;
-import mil.nga.wkb.geom.Point;
-import mil.nga.wkb.geom.Polygon;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.GeometryType;
+import mil.nga.sf.LineString;
+import mil.nga.sf.LinearRing;
+import mil.nga.sf.Point;
+import mil.nga.sf.Polygon;
+import mil.nga.sf.Position;
 
 /**
  * Feature Tile Utils
@@ -39,7 +41,7 @@ public class FeatureTileUtils {
 	 */
 	public static FeatureDao createFeatureDao(GeoPackage geoPackage) {
 
-		BoundingBox boundingBox = new BoundingBox();
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-180d, -90d, 180d, 90d);
 
 		GeometryColumns geometryColumns = new GeometryColumns();
 		geometryColumns.setId(new TableColumnKey(TABLE_NAME, "geom"));
@@ -192,7 +194,7 @@ public class FeatureTileUtils {
 	public static void setPoint(FeatureRow featureRow, double x, double y) {
 		GeoPackageGeometryData geomData = new GeoPackageGeometryData(
 				ProjectionConstants.EPSG_WORLD_GEODETIC_SYSTEM);
-		Point point = new Point(false, false, x, y);
+		Point point = new Point(new Position(x, y));
 		geomData.setGeometry(point);
 		featureRow.setGeometry(geomData);
 	}
@@ -210,8 +212,8 @@ public class FeatureTileUtils {
 	private static LineString getLineString(double[][] points) {
 		LineString lineString = new LineString(false, false);
 		for (int i = 0; i < points.length; i++) {
-			Point point = new Point(false, false, points[i][0], points[i][1]);
-			lineString.addPoint(point);
+			Position position = new Position(points[i][0], points[i][1]);
+			lineString.addPosition(position);
 		}
 		return lineString;
 	}
@@ -224,7 +226,7 @@ public class FeatureTileUtils {
 		Polygon polygon = new Polygon(false, false);
 		for (double[][] ring : points) {
 			LineString lineString = getLineString(ring);
-			polygon.addRing(lineString);
+			polygon.addRing(new LinearRing(lineString));
 		}
 		geomData.setGeometry(polygon);
 		featureRow.setGeometry(geomData);

@@ -3,14 +3,14 @@ package mil.nga.geopackage.extension.index;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.GeoPackageException;
 import mil.nga.geopackage.features.user.FeatureDao;
 import mil.nga.geopackage.features.user.FeatureResultSet;
 import mil.nga.geopackage.features.user.FeatureRow;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionTransform;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionTransform;
 
 import com.j256.ormlite.dao.CloseableIterator;
 import com.j256.ormlite.misc.TransactionManager;
@@ -145,10 +145,10 @@ public class FeatureTableIndex extends FeatureTableCoreIndex {
 	 *            projection of the provided bounding box
 	 * @return geometry indices iterator
 	 */
-	public CloseableIterator<GeometryIndex> query(BoundingBox boundingBox,
+	public CloseableIterator<GeometryIndex> query(GeometryEnvelope boundingBox,
 			Projection projection) {
 
-		BoundingBox featureBoundingBox = getFeatureBoundingBox(boundingBox,
+		GeometryEnvelope featureBoundingBox = getFeatureBoundingBox(boundingBox,
 				projection);
 
 		CloseableIterator<GeometryIndex> geometryIndices = query(featureBoundingBox);
@@ -165,9 +165,9 @@ public class FeatureTableIndex extends FeatureTableCoreIndex {
 	 *            projection of the provided bounding box
 	 * @return count
 	 */
-	public long count(BoundingBox boundingBox, Projection projection) {
+	public long count(GeometryEnvelope boundingBox, Projection projection) {
 
-		BoundingBox featureBoundingBox = getFeatureBoundingBox(boundingBox,
+		GeometryEnvelope featureBoundingBox = getFeatureBoundingBox(boundingBox,
 				projection);
 
 		long count = count(featureBoundingBox);
@@ -183,11 +183,11 @@ public class FeatureTableIndex extends FeatureTableCoreIndex {
 	 * @param projection
 	 * @return feature projected bounding box
 	 */
-	private BoundingBox getFeatureBoundingBox(BoundingBox boundingBox,
+	private GeometryEnvelope getFeatureBoundingBox(GeometryEnvelope boundingBox,
 			Projection projection) {
 		ProjectionTransform projectionTransform = projection
 				.getTransformation(featureDao.getProjection());
-		BoundingBox featureBoundingBox = projectionTransform
+		GeometryEnvelope featureBoundingBox = projectionTransform
 				.transform(boundingBox);
 		return featureBoundingBox;
 	}

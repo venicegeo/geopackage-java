@@ -3,16 +3,16 @@ package mil.nga.geopackage.test.extension.elevation;
 import java.util.List;
 
 import junit.framework.TestCase;
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.core.srs.SpatialReferenceSystem;
 import mil.nga.geopackage.core.srs.SpatialReferenceSystemDao;
 import mil.nga.geopackage.extension.elevation.ElevationTileResults;
 import mil.nga.geopackage.extension.elevation.ElevationTilesAlgorithm;
 import mil.nga.geopackage.extension.elevation.ElevationTilesTiff;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
 import mil.nga.geopackage.test.ImportElevationTilesTiffGeoPackageTestCase;
 import mil.nga.geopackage.tiles.TileBoundingBoxUtils;
 import mil.nga.geopackage.tiles.matrix.TileMatrix;
@@ -122,7 +122,7 @@ public class ElevationTilesTiffImportTest extends
 	@Test
 	public void testRandomLocations() throws Exception {
 
-		BoundingBox projectedBoundingBox = null;
+		GeometryEnvelope projectedBoundingBox = null;
 
 		List<String> elevationTables = ElevationTilesTiff.getTables(geoPackage);
 		TileMatrixSetDao dao = geoPackage.getTileMatrixSetDao();
@@ -131,7 +131,7 @@ public class ElevationTilesTiffImportTest extends
 
 			TileMatrixSet tileMatrixSet = dao.queryForId(elevationTable);
 
-			BoundingBox boundingBox = tileMatrixSet.getBoundingBox();
+			GeometryEnvelope boundingBox = tileMatrixSet.getBoundingBox();
 			if (PRINT) {
 				System.out.println("Min Latitude: "
 						+ boundingBox.getMinLatitude());
@@ -208,8 +208,10 @@ public class ElevationTilesTiffImportTest extends
 		double minLatitude = 8760000;
 		double maxLatitude = minLatitude + (height * heightPixelDistance);
 
-		BoundingBox boundingBox = new BoundingBox(minLongitude, maxLongitude,
-				minLatitude, maxLatitude);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(minLongitude, 
+				minLatitude, 
+				maxLongitude,
+				maxLatitude);
 
 		Projection projection = ProjectionFactory.getProjection(geoPackageEpsg);
 		Projection printProjection = ProjectionFactory
@@ -235,7 +237,7 @@ public class ElevationTilesTiffImportTest extends
 			System.out.println();
 			System.out.println("WGS84 REQUEST");
 			System.out.println();
-			BoundingBox wgs84BoundingBox = wgs84Transform
+			GeometryEnvelope wgs84BoundingBox = wgs84Transform
 					.transform(boundingBox);
 			System.out.println("   Min Lat: "
 					+ wgs84BoundingBox.getMinLatitude());
@@ -340,7 +342,7 @@ public class ElevationTilesTiffImportTest extends
 
 			TileMatrixSet tileMatrixSet = dao.queryForId(elevationTable);
 
-			BoundingBox boundingBox = tileMatrixSet.getBoundingBox();
+			GeometryEnvelope boundingBox = tileMatrixSet.getBoundingBox();
 
 			double minLongitude = boundingBox.getMinLongitude();
 			double maxLongitude = boundingBox.getMaxLongitude();
@@ -372,7 +374,7 @@ public class ElevationTilesTiffImportTest extends
 				System.out.println();
 				System.out.println("WGS84 REQUEST");
 				System.out.println();
-				BoundingBox wgs84BoundingBox = wgs84Transform
+				GeometryEnvelope wgs84BoundingBox = wgs84Transform
 						.transform(boundingBox);
 				System.out.println("   Min Lat: "
 						+ wgs84BoundingBox.getMinLatitude());
@@ -505,7 +507,7 @@ public class ElevationTilesTiffImportTest extends
 				for (int row = 0; row < tileMatrix.getMatrixHeight(); row++) {
 					for (int column = 0; column < tileMatrix.getMatrixWidth(); column++) {
 
-						BoundingBox boundingBox2 = TileBoundingBoxUtils
+						GeometryEnvelope boundingBox2 = TileBoundingBoxUtils
 								.getBoundingBox(boundingBox, tileMatrix,
 										column, row);
 

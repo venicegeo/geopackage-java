@@ -4,10 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionTransform;
 import mil.nga.geopackage.tiles.ImageRectangle;
 import mil.nga.geopackage.tiles.ImageRectangleF;
 import mil.nga.geopackage.tiles.TileBoundingBoxJavaUtils;
@@ -18,6 +15,9 @@ import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.geopackage.tiles.user.TileResultSet;
 import mil.nga.geopackage.tiles.user.TileRow;
 import mil.nga.geopackage.tiles.user.TileTable;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionTransform;
 
 /**
  * Tiled Gridded Elevation Common Data Extension
@@ -99,7 +99,7 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 
 		// Transform to the projection of the elevation tiles
 		ProjectionTransform transformRequestToElevation = null;
-		BoundingBox requestProjectedBoundingBox = request.getBoundingBox();
+		GeometryEnvelope requestProjectedBoundingBox = request.getBoundingBox();
 		if (!sameProjection) {
 			transformRequestToElevation = requestProjection
 					.getTransformation(elevationProjection);
@@ -196,7 +196,7 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 
 		// Transform to the projection of the elevation tiles
 		ProjectionTransform transformRequestToElevation = null;
-		BoundingBox requestProjectedBoundingBox = request.getBoundingBox();
+		GeometryEnvelope requestProjectedBoundingBox = request.getBoundingBox();
 		if (!sameProjection) {
 			transformRequestToElevation = requestProjection
 					.getTransformation(elevationProjection);
@@ -253,7 +253,7 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 	 * @return tile matrix results
 	 */
 	private ElevationTileMatrixResults getResults(ElevationRequest request,
-			BoundingBox requestProjectedBoundingBox) {
+			GeometryEnvelope requestProjectedBoundingBox) {
 		return getResults(request, requestProjectedBoundingBox, 0);
 	}
 
@@ -269,7 +269,7 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 	 * @return tile matrix results
 	 */
 	private ElevationTileMatrixResults getResults(ElevationRequest request,
-			BoundingBox requestProjectedBoundingBox, int overlappingPixels) {
+			GeometryEnvelope requestProjectedBoundingBox, int overlappingPixels) {
 		// Try to get the elevation from the current zoom level
 		TileMatrix tileMatrix = getTileMatrix(request);
 		ElevationTileMatrixResults results = null;
@@ -298,10 +298,10 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 	 * @return tile matrix results
 	 */
 	private ElevationTileMatrixResults getResults(
-			BoundingBox requestProjectedBoundingBox, TileMatrix tileMatrix,
+			GeometryEnvelope requestProjectedBoundingBox, TileMatrix tileMatrix,
 			int overlappingPixels) {
 		ElevationTileMatrixResults results = null;
-		BoundingBox paddedBoundingBox = padBoundingBox(tileMatrix,
+		GeometryEnvelope paddedBoundingBox = padBoundingBox(tileMatrix,
 				requestProjectedBoundingBox, overlappingPixels);
 		TileResultSet tileResults = retrieveSortedTileResults(
 				paddedBoundingBox, tileMatrix);
@@ -329,7 +329,7 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 	 * @return tile matrix results
 	 */
 	private ElevationTileMatrixResults getResultsZoom(
-			BoundingBox requestProjectedBoundingBox, TileMatrix tileMatrix,
+			GeometryEnvelope requestProjectedBoundingBox, TileMatrix tileMatrix,
 			int overlappingPixels) {
 
 		ElevationTileMatrixResults results = null;
@@ -363,7 +363,7 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 	 * @return tile matrix results
 	 */
 	private ElevationTileMatrixResults getResultsZoomIn(
-			BoundingBox requestProjectedBoundingBox, TileMatrix tileMatrix,
+			GeometryEnvelope requestProjectedBoundingBox, TileMatrix tileMatrix,
 			int overlappingPixels) {
 
 		ElevationTileMatrixResults results = null;
@@ -394,7 +394,7 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 	 * @return tile matrix results
 	 */
 	private ElevationTileMatrixResults getResultsZoomOut(
-			BoundingBox requestProjectedBoundingBox, TileMatrix tileMatrix,
+			GeometryEnvelope requestProjectedBoundingBox, TileMatrix tileMatrix,
 			int overlappingPixels) {
 
 		ElevationTileMatrixResults results = null;
@@ -480,12 +480,12 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 			}
 
 			// Get the bounding box of the elevation
-			BoundingBox tileBoundingBox = TileBoundingBoxUtils
+			GeometryEnvelope tileBoundingBox = TileBoundingBoxUtils
 					.getBoundingBox(elevationBoundingBox, tileMatrix,
 							currentColumn, currentRow);
 
 			// Get the bounding box where the request and elevation tile overlap
-			BoundingBox overlap = request.overlap(tileBoundingBox);
+			GeometryEnvelope overlap = request.overlap(tileBoundingBox);
 
 			// Get the gridded tile value for the tile
 			GriddedTile griddedTile = getGriddedTile(tileRow.getId());
@@ -694,12 +694,12 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 			TileRow tileRow = tileResults.getRow();
 
 			// Get the bounding box of the elevation
-			BoundingBox tileBoundingBox = TileBoundingBoxUtils.getBoundingBox(
+			GeometryEnvelope tileBoundingBox = TileBoundingBoxUtils.getBoundingBox(
 					elevationBoundingBox, tileMatrix, tileRow.getTileColumn(),
 					tileRow.getTileRow());
 
 			// Get the bounding box where the request and elevation tile overlap
-			BoundingBox overlap = request.overlap(tileBoundingBox);
+			GeometryEnvelope overlap = request.overlap(tileBoundingBox);
 
 			// If the elevation tile overlaps with the requested box
 			if (overlap != null) {
@@ -794,7 +794,7 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 		if (request.overlap(elevationBoundingBox) != null) {
 
 			// Get the tile distance
-			BoundingBox projectedBoundingBox = request
+			GeometryEnvelope projectedBoundingBox = request
 					.getProjectedBoundingBox();
 			double distanceWidth = projectedBoundingBox.getMaxLongitude()
 					- projectedBoundingBox.getMinLongitude();
@@ -825,7 +825,7 @@ public abstract class ElevationTilesCommon<TImage extends ElevationImage>
 	 * @return tile results or null
 	 */
 	private TileResultSet retrieveSortedTileResults(
-			BoundingBox projectedRequestBoundingBox, TileMatrix tileMatrix) {
+			GeometryEnvelope projectedRequestBoundingBox, TileMatrix tileMatrix) {
 
 		TileResultSet tileResults = null;
 

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.core.contents.Contents;
 import mil.nga.geopackage.core.contents.ContentsDataType;
@@ -22,10 +21,11 @@ import mil.nga.geopackage.extension.elevation.ElevationTilesPng;
 import mil.nga.geopackage.extension.elevation.GriddedCoverage;
 import mil.nga.geopackage.extension.elevation.GriddedCoverageDataType;
 import mil.nga.geopackage.extension.elevation.GriddedTile;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
 import mil.nga.geopackage.test.CreateElevationTilesGeoPackageTestCase.ElevationTileValues;
 import mil.nga.geopackage.tiles.TileBoundingBoxUtils;
 import mil.nga.geopackage.tiles.matrix.TileMatrix;
@@ -88,7 +88,7 @@ public class ElevationTilesPngTestUtils {
 			TestCase.assertNotNull(tileMatrixSet.getMaxY());
 
 			// Test the tile matrix set SRS
-			SpatialReferenceSystem srs = tileMatrixSet.getSrs();
+			mil.nga.sf.srs.SpatialReferenceSystem srs = tileMatrixSet.getSrs();
 			TestCase.assertNotNull(srs);
 			TestCase.assertNotNull(srs.getSrsName());
 			TestCase.assertNotNull(srs.getSrsId());
@@ -328,7 +328,7 @@ public class ElevationTilesPngTestUtils {
 
 		TileMatrix tileMatrix = elevationTiles.getTileDao().getTileMatrix(
 				tileRow.getZoomLevel());
-		BoundingBox boundingBox = TileBoundingBoxUtils.getBoundingBox(
+		GeometryEnvelope boundingBox = TileBoundingBoxUtils.getBoundingBox(
 				tileMatrixSet.getBoundingBox(), tileMatrix,
 				tileRow.getTileColumn(), tileRow.getTileRow());
 		ElevationTileResults elevationTileResults = elevationTiles
@@ -475,7 +475,7 @@ public class ElevationTilesPngTestUtils {
 			throws SQLException {
 
 		// Determine an alternate projection
-		BoundingBox boundingBox = tileMatrixSet.getBoundingBox();
+		GeometryEnvelope boundingBox = tileMatrixSet.getBoundingBox();
 		SpatialReferenceSystemDao srsDao = geoPackage
 				.getSpatialReferenceSystemDao();
 		long srsId = tileMatrixSet.getSrsId();
@@ -493,7 +493,7 @@ public class ElevationTilesPngTestUtils {
 				.getProjection(requestEpsg);
 		ProjectionTransform elevationToRequest = projection
 				.getTransformation(requestProjection);
-		BoundingBox projectedBoundingBox = elevationToRequest
+		GeometryEnvelope projectedBoundingBox = elevationToRequest
 				.transform(boundingBox);
 
 		// Get a random coordinate
@@ -529,8 +529,10 @@ public class ElevationTilesPngTestUtils {
 		double maxLongitude = (projectedBoundingBox.getMaxLongitude() - minLongitude)
 				* Math.random() + minLongitude;
 
-		BoundingBox requestBoundingBox = new BoundingBox(minLongitude,
-				maxLongitude, minLatitude, maxLatitude);
+		GeometryEnvelope requestBoundingBox = new GeometryEnvelope(minLongitude,
+				minLatitude, 
+				maxLongitude, 
+				maxLatitude);
 		ElevationTileResults elevations = elevationTiles2
 				.getElevations(requestBoundingBox);
 		TestCase.assertNotNull(elevations);
@@ -641,7 +643,7 @@ public class ElevationTilesPngTestUtils {
 			elevationTiles.setWidth(specifiedWidth);
 			elevationTiles.setHeight(specifiedHeight);
 
-			BoundingBox boundingBox = tileMatrixSet.getBoundingBox();
+			GeometryEnvelope boundingBox = tileMatrixSet.getBoundingBox();
 
 			// Build a random bounding box
 			double minLatitude = (boundingBox.getMaxLatitude() - boundingBox
@@ -657,8 +659,10 @@ public class ElevationTilesPngTestUtils {
 			double maxLongitude = (boundingBox.getMaxLongitude() - minLongitude)
 					* Math.random() + minLongitude;
 
-			BoundingBox requestBoundingBox = new BoundingBox(minLongitude,
-					maxLongitude, minLatitude, maxLatitude);
+			GeometryEnvelope requestBoundingBox = new GeometryEnvelope(minLongitude,
+					minLatitude, 
+					maxLongitude, 
+					maxLatitude);
 
 			ElevationTileResults elevations = elevationTiles
 					.getElevations(requestBoundingBox);
@@ -772,7 +776,7 @@ public class ElevationTilesPngTestUtils {
 	 * @throws Exception
 	 */
 	public static ElevationTileResults getElevations(GeoPackage geoPackage,
-			ElevationTilesAlgorithm algorithm, BoundingBox boundingBox,
+			ElevationTilesAlgorithm algorithm, GeometryEnvelope boundingBox,
 			int width, int height, long epsg) throws Exception {
 
 		ElevationTileResults elevations = null;

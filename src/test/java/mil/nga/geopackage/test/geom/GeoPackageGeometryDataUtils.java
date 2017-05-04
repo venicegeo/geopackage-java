@@ -15,26 +15,28 @@ import mil.nga.geopackage.features.columns.GeometryColumnsDao;
 import mil.nga.geopackage.features.user.FeatureDao;
 import mil.nga.geopackage.features.user.FeatureResultSet;
 import mil.nga.geopackage.geom.GeoPackageGeometryData;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
-import mil.nga.wkb.geom.CircularString;
-import mil.nga.wkb.geom.CompoundCurve;
-import mil.nga.wkb.geom.CurvePolygon;
-import mil.nga.wkb.geom.Geometry;
-import mil.nga.wkb.geom.GeometryCollection;
-import mil.nga.wkb.geom.GeometryEnvelope;
-import mil.nga.wkb.geom.GeometryType;
-import mil.nga.wkb.geom.LineString;
-import mil.nga.wkb.geom.MultiLineString;
-import mil.nga.wkb.geom.MultiPoint;
-import mil.nga.wkb.geom.MultiPolygon;
-import mil.nga.wkb.geom.Point;
-import mil.nga.wkb.geom.Polygon;
-import mil.nga.wkb.geom.PolyhedralSurface;
-import mil.nga.wkb.geom.TIN;
-import mil.nga.wkb.geom.Triangle;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
+import mil.nga.sf.wkb.Utils;
+import mil.nga.sf.CircularString;
+import mil.nga.sf.CompoundCurve;
+import mil.nga.sf.CurvePolygon;
+import mil.nga.sf.Geometry;
+import mil.nga.sf.GeometryCollection;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.GeometryType;
+import mil.nga.sf.LineString;
+import mil.nga.sf.MultiLineString;
+import mil.nga.sf.MultiPoint;
+import mil.nga.sf.MultiPolygon;
+import mil.nga.sf.Point;
+import mil.nga.sf.Polygon;
+import mil.nga.sf.PolyhedralSurface;
+import mil.nga.sf.Position;
+import mil.nga.sf.TIN;
+import mil.nga.sf.Triangle;
 
 /**
  * GeoPackage Geometry Data test utils
@@ -391,7 +393,7 @@ public class GeoPackageGeometryDataUtils {
 				actual.getGeometryType());
 		TestCase.assertEquals(expected.hasZ(), actual.hasZ());
 		TestCase.assertEquals(expected.hasM(), actual.hasM());
-		TestCase.assertEquals(expected.getWkbCode(), actual.getWkbCode());
+		TestCase.assertEquals(Utils.getWkbCode(expected), Utils.getWkbCode(actual));
 	}
 
 	/**
@@ -400,9 +402,8 @@ public class GeoPackageGeometryDataUtils {
 	 * @param expected
 	 * @param actual
 	 */
-	private static void comparePoint(Point expected, Point actual, double delta) {
+	private static void comparePosition(Position expected, Position actual, double delta) {
 
-		compareBaseGeometryAttributes(expected, actual);
 		TestCase.assertEquals(expected.getX(), actual.getX(), delta);
 		TestCase.assertEquals(expected.getY(), actual.getY(), delta);
 		if (expected.getZ() == null) {
@@ -418,6 +419,18 @@ public class GeoPackageGeometryDataUtils {
 	}
 
 	/**
+	 * Compare the two points for equality
+	 * 
+	 * @param expected
+	 * @param actual
+	 */
+	private static void comparePoint(Point expected, Point actual, double delta) {
+
+		compareBaseGeometryAttributes(expected, actual);
+		comparePosition(expected.getPosition(), actual.getPosition(), delta);
+	}
+
+	/**
 	 * Compare the two line strings for equality
 	 * 
 	 * @param expected
@@ -428,10 +441,10 @@ public class GeoPackageGeometryDataUtils {
 			LineString actual, double delta) {
 
 		compareBaseGeometryAttributes(expected, actual);
-		TestCase.assertEquals(expected.numPoints(), actual.numPoints());
-		for (int i = 0; i < expected.numPoints(); i++) {
-			comparePoint(expected.getPoints().get(i),
-					actual.getPoints().get(i), delta);
+		TestCase.assertEquals(expected.numPositions(), actual.numPositions());
+		for (int i = 0; i < expected.numPositions(); i++) {
+			comparePosition(expected.getPositions().get(i),
+					actual.getPositions().get(i), delta);
 		}
 	}
 
@@ -464,10 +477,10 @@ public class GeoPackageGeometryDataUtils {
 			MultiPoint actual, double delta) {
 
 		compareBaseGeometryAttributes(expected, actual);
-		TestCase.assertEquals(expected.numPoints(), actual.numPoints());
-		for (int i = 0; i < expected.numPoints(); i++) {
-			comparePoint(expected.getPoints().get(i),
-					actual.getPoints().get(i), delta);
+		TestCase.assertEquals(expected.numPositions(), actual.numPositions());
+		for (int i = 0; i < expected.numPositions(); i++) {
+			comparePosition(expected.getPositions().get(i),
+					actual.getPositions().get(i), delta);
 		}
 	}
 
@@ -538,10 +551,10 @@ public class GeoPackageGeometryDataUtils {
 			CircularString actual, double delta) {
 
 		compareBaseGeometryAttributes(expected, actual);
-		TestCase.assertEquals(expected.numPoints(), actual.numPoints());
-		for (int i = 0; i < expected.numPoints(); i++) {
-			comparePoint(expected.getPoints().get(i),
-					actual.getPoints().get(i), delta);
+		TestCase.assertEquals(expected.numPositions(), actual.numPositions());
+		for (int i = 0; i < expected.numPositions(); i++) {
+			comparePosition(expected.getPositions().get(i),
+					actual.getPositions().get(i), delta);
 		}
 	}
 

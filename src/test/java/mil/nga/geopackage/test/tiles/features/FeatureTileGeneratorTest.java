@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import junit.framework.TestCase;
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.extension.index.FeatureTableIndex;
 import mil.nga.geopackage.features.user.FeatureDao;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
 import mil.nga.geopackage.test.CreateGeoPackageTestCase;
 import mil.nga.geopackage.tiles.TileBoundingBoxUtils;
 import mil.nga.geopackage.tiles.TileGenerator;
@@ -137,7 +137,7 @@ public class FeatureTileGeneratorTest extends CreateGeoPackageTestCase {
 			featureTiles.setMaxFeaturesTileDraw(new NumberFeaturesTile());
 		}
 
-		BoundingBox boundingBox = new BoundingBox();
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-180d, -90d, 180d, 90d);
 		boundingBox = TileBoundingBoxUtils
 				.boundWgs84BoundingBoxWithWebMercatorLimits(boundingBox);
 		boundingBox = ProjectionFactory

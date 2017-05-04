@@ -7,20 +7,20 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.extension.index.FeatureTableIndex;
 import mil.nga.geopackage.extension.index.GeometryIndex;
 import mil.nga.geopackage.features.user.FeatureDao;
 import mil.nga.geopackage.features.user.FeatureResultSet;
 import mil.nga.geopackage.features.user.FeatureRow;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
 import mil.nga.geopackage.property.GeoPackageJavaProperties;
 import mil.nga.geopackage.property.JavaPropertyConstants;
 import mil.nga.geopackage.tiles.ImageUtils;
 import mil.nga.geopackage.tiles.TileBoundingBoxUtils;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
 
 import com.j256.ormlite.dao.CloseableIterator;
 
@@ -618,7 +618,7 @@ public abstract class FeatureTiles {
 	public BufferedImage drawTileQueryIndex(int x, int y, int zoom) {
 
 		// Get the web mercator bounding box
-		BoundingBox webMercatorBoundingBox = TileBoundingBoxUtils
+		GeometryEnvelope webMercatorBoundingBox = TileBoundingBoxUtils
 				.getWebMercatorBoundingBox(x, y, zoom);
 
 		BufferedImage image = null;
@@ -669,7 +669,7 @@ public abstract class FeatureTiles {
 	public long queryIndexedFeaturesCount(int x, int y, int zoom) {
 
 		// Get the web mercator bounding box
-		BoundingBox webMercatorBoundingBox = TileBoundingBoxUtils
+		GeometryEnvelope webMercatorBoundingBox = TileBoundingBoxUtils
 				.getWebMercatorBoundingBox(x, y, zoom);
 
 		// Query for the count of geometries matching the bounds in the index
@@ -684,11 +684,11 @@ public abstract class FeatureTiles {
 	 * @param webMercatorBoundingBox
 	 * @return count
 	 */
-	public long queryIndexedFeaturesCount(BoundingBox webMercatorBoundingBox) {
+	public long queryIndexedFeaturesCount(GeometryEnvelope webMercatorBoundingBox) {
 
 		// Create an expanded bounding box to handle features outside the tile
 		// that overlap
-		BoundingBox expandedQueryBoundingBox = expandBoundingBox(webMercatorBoundingBox);
+		GeometryEnvelope expandedQueryBoundingBox = expandBoundingBox(webMercatorBoundingBox);
 
 		// Query for the count of geometries matching the bounds in the index
 		long count = featureIndex.count(expandedQueryBoundingBox,
@@ -704,11 +704,11 @@ public abstract class FeatureTiles {
 	 * @return geometry index results
 	 */
 	public CloseableIterator<GeometryIndex> queryIndexedFeatures(
-			BoundingBox webMercatorBoundingBox) {
+			GeometryEnvelope webMercatorBoundingBox) {
 
 		// Create an expanded bounding box to handle features outside the tile
 		// that overlap
-		BoundingBox expandedQueryBoundingBox = expandBoundingBox(webMercatorBoundingBox);
+		GeometryEnvelope expandedQueryBoundingBox = expandBoundingBox(webMercatorBoundingBox);
 
 		// Query for geometries matching the bounds in the index
 		CloseableIterator<GeometryIndex> results = featureIndex.query(
@@ -724,7 +724,7 @@ public abstract class FeatureTiles {
 	 * @param webMercatorBoundingBox
 	 * @return
 	 */
-	private BoundingBox expandBoundingBox(BoundingBox webMercatorBoundingBox) {
+	private GeometryEnvelope expandBoundingBox(GeometryEnvelope webMercatorBoundingBox) {
 
 		// Create an expanded bounding box to handle features outside the tile
 		// that overlap
@@ -736,8 +736,10 @@ public abstract class FeatureTiles {
 				tileHeight, webMercatorBoundingBox, 0 - heightOverlap);
 		double minLatitude = TileBoundingBoxUtils.getLatitudeFromPixel(
 				tileHeight, webMercatorBoundingBox, tileHeight + heightOverlap);
-		BoundingBox expandedQueryBoundingBox = new BoundingBox(minLongitude,
-				maxLongitude, minLatitude, maxLatitude);
+		GeometryEnvelope expandedQueryBoundingBox = new GeometryEnvelope(minLongitude,
+				minLatitude,
+				maxLongitude, 
+				maxLatitude);
 
 		return expandedQueryBoundingBox;
 	}
@@ -753,7 +755,7 @@ public abstract class FeatureTiles {
 	 */
 	public BufferedImage drawTileQueryAll(int x, int y, int zoom) {
 
-		BoundingBox boundingBox = TileBoundingBoxUtils
+		GeometryEnvelope boundingBox = TileBoundingBoxUtils
 				.getWebMercatorBoundingBox(x, y, zoom);
 
 		BufferedImage image = null;
@@ -814,7 +816,7 @@ public abstract class FeatureTiles {
 	 * @param results
 	 * @return image
 	 */
-	public abstract BufferedImage drawTile(BoundingBox webMercatorBoundingBox,
+	public abstract BufferedImage drawTile(GeometryEnvelope webMercatorBoundingBox,
 			CloseableIterator<GeometryIndex> results);
 
 	/**
@@ -824,7 +826,7 @@ public abstract class FeatureTiles {
 	 * @param resultSet
 	 * @return image
 	 */
-	public abstract BufferedImage drawTile(BoundingBox webMercatorBoundingBox,
+	public abstract BufferedImage drawTile(GeometryEnvelope webMercatorBoundingBox,
 			FeatureResultSet resultSet);
 
 	/**
@@ -834,7 +836,7 @@ public abstract class FeatureTiles {
 	 * @param featureRow
 	 * @return image
 	 */
-	public abstract BufferedImage drawTile(BoundingBox webMercatorBoundingBox,
+	public abstract BufferedImage drawTile(GeometryEnvelope webMercatorBoundingBox,
 			List<FeatureRow> featureRow);
 
 }

@@ -6,14 +6,14 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.GeoPackageException;
-import mil.nga.geopackage.projection.Projection;
 import mil.nga.geopackage.tiles.ImageUtils;
 import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
 import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.geopackage.tiles.user.TileRow;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
 
 /**
  * Tiled Gridded Elevation, PNG Encoding, Data Extension
@@ -682,8 +682,8 @@ public class ElevationTilesPng extends ElevationTilesCommon<ElevationPngImage> {
 	 */
 	public static ElevationTilesPng createTileTableWithMetadata(
 			GeoPackage geoPackage, String tableName,
-			BoundingBox contentsBoundingBox, long contentsSrsId,
-			BoundingBox tileMatrixSetBoundingBox, long tileMatrixSetSrsId) {
+			GeometryEnvelope contentsBoundingBox, long contentsSrsId,
+			GeometryEnvelope tileMatrixSetBoundingBox, long tileMatrixSetSrsId) {
 
 		TileMatrixSet tileMatrixSet = ElevationTilesCore
 				.createTileTableWithMetadata(geoPackage, tableName,

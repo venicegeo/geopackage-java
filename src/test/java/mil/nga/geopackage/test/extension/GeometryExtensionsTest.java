@@ -11,7 +11,7 @@ import mil.nga.geopackage.extension.Extensions;
 import mil.nga.geopackage.extension.ExtensionsDao;
 import mil.nga.geopackage.extension.GeometryExtensions;
 import mil.nga.geopackage.test.CreateGeoPackageTestCase;
-import mil.nga.wkb.geom.GeometryType;
+import mil.nga.sf.GeometryType;
 
 import org.junit.Test;
 

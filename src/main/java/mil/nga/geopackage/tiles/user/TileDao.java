@@ -4,18 +4,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackageException;
 import mil.nga.geopackage.core.contents.Contents;
 import mil.nga.geopackage.core.srs.SpatialReferenceSystem;
 import mil.nga.geopackage.db.GeoPackageConnection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
 import mil.nga.geopackage.tiles.TileBoundingBoxUtils;
 import mil.nga.geopackage.tiles.TileGrid;
 import mil.nga.geopackage.tiles.matrix.TileMatrix;
 import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
 import mil.nga.geopackage.user.UserDao;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
 
 /**
  * Tile DAO for reading tile user tables
@@ -86,7 +86,8 @@ public class TileDao extends
 		this.widths = new double[tileMatrices.size()];
 		this.heights = new double[tileMatrices.size()];
 
-		projection = ProjectionFactory.getProjection(tileMatrixSet.getSrs());
+		mil.nga.sf.srs.SpatialReferenceSystem srs = tileMatrixSet.getSrs();
+		projection = ProjectionFactory.getProjection(srs);
 
 		// Set the min and max zoom levels
 		if (!tileMatrices.isEmpty()) {
@@ -125,7 +126,7 @@ public class TileDao extends
 	 * {@inheritDoc}
 	 */
 	@Override
-	public BoundingBox getBoundingBox() {
+	public GeometryEnvelope getBoundingBox() {
 		return tileMatrixSet.getBoundingBox();
 	}
 
@@ -137,13 +138,13 @@ public class TileDao extends
 	 * @return bounding box of zoom level, or null if no tiles
 	 * @since 1.1.1
 	 */
-	public BoundingBox getBoundingBox(long zoomLevel) {
-		BoundingBox boundingBox = null;
+	public GeometryEnvelope getBoundingBox(long zoomLevel) {
+		GeometryEnvelope boundingBox = null;
 		TileMatrix tileMatrix = getTileMatrix(zoomLevel);
 		if (tileMatrix != null) {
 			TileGrid tileGrid = queryForTileGrid(zoomLevel);
 			if (tileGrid != null) {
-				BoundingBox matrixSetBoundingBox = getBoundingBox();
+				GeometryEnvelope matrixSetBoundingBox = getBoundingBox();
 				boundingBox = TileBoundingBoxUtils.getBoundingBox(
 						matrixSetBoundingBox, tileMatrix, tileGrid);
 			}
@@ -546,8 +547,8 @@ public class TileDao extends
 	public boolean isGoogleTiles() {
 
 		// Convert the bounding box to wgs84
-		BoundingBox boundingBox = tileMatrixSet.getBoundingBox();
-		BoundingBox wgs84BoundingBox = projection.getTransformation(
+		GeometryEnvelope boundingBox = tileMatrixSet.getBoundingBox();
+		GeometryEnvelope wgs84BoundingBox = projection.getTransformation(
 				ProjectionConstants.EPSG_WORLD_GEODETIC_SYSTEM).transform(
 				boundingBox);
 

@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.GeoPackageException;
 import mil.nga.geopackage.core.contents.Contents;
@@ -24,10 +23,6 @@ import mil.nga.geopackage.io.TileDirectory.XDirectory;
 import mil.nga.geopackage.io.TileDirectory.YFile;
 import mil.nga.geopackage.io.TileDirectory.ZoomDirectory;
 import mil.nga.geopackage.manager.GeoPackageManager;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
 import mil.nga.geopackage.tiles.ImageRectangle;
 import mil.nga.geopackage.tiles.ImageUtils;
 import mil.nga.geopackage.tiles.TileBoundingBoxJavaUtils;
@@ -41,6 +36,11 @@ import mil.nga.geopackage.tiles.user.TileColumn;
 import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.geopackage.tiles.user.TileRow;
 import mil.nga.geopackage.tiles.user.TileTable;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
 
 /**
  * Read tiles from a file system directory into a GeoPackage file
@@ -511,7 +511,7 @@ public class TileReader {
 		int created = 0;
 
 		// Find the bounding box that includes all the zoom levels
-		BoundingBox webMercatorBoundingBox = null;
+		GeometryEnvelope webMercatorBoundingBox = null;
 
 		for (ZoomDirectory zoomDirectory : tileDirectory.zooms.values()) {
 
@@ -530,14 +530,14 @@ public class TileReader {
 			// Get the bounding box at the zoom level
 			TileGrid tileGrid = new TileGrid(zoomDirectory.minX,
 					zoomDirectory.maxX, minY, maxY);
-			BoundingBox zoomBoundingBox = TileBoundingBoxUtils
+			GeometryEnvelope zoomBoundingBox = TileBoundingBoxUtils
 					.getWebMercatorBoundingBox(tileGrid, zoomDirectory.zoom);
 
 			// Set or expand the bounding box
 			if (webMercatorBoundingBox == null) {
 				webMercatorBoundingBox = zoomBoundingBox;
 			} else {
-				webMercatorBoundingBox = TileBoundingBoxUtils.union(
+				webMercatorBoundingBox = GeometryEnvelope.union(
 						webMercatorBoundingBox, zoomBoundingBox);
 			}
 		}
@@ -546,7 +546,7 @@ public class TileReader {
 		// level
 		TileGrid totalTileGrid = TileBoundingBoxUtils.getTileGrid(
 				webMercatorBoundingBox, tileDirectory.minZoom);
-		BoundingBox totalWebMercatorBoundingBox = TileBoundingBoxUtils
+		GeometryEnvelope totalWebMercatorBoundingBox = TileBoundingBoxUtils
 				.getWebMercatorBoundingBox(totalTileGrid, tileDirectory.minZoom);
 
 		// Create the user tile table
@@ -571,7 +571,7 @@ public class TileReader {
 				.getTransformation(wgs84Projection);
 
 		// Get the WGS 84 bounding box
-		BoundingBox totalWgs84BoundingBox = webMercatorToWgs84
+		GeometryEnvelope totalWgs84BoundingBox = webMercatorToWgs84
 				.transform(totalWebMercatorBoundingBox);
 
 		// Create the Tile Matrix Set and Tile Matrix tables
@@ -642,7 +642,7 @@ public class TileReader {
 					byte[] rawImageBytes = null;
 
 					// Determine the bounding box of this column and row
-					BoundingBox tileMatrixBoundingBox = TileBoundingBoxUtils
+					GeometryEnvelope tileMatrixBoundingBox = TileBoundingBoxUtils
 							.getBoundingBox(totalWebMercatorBoundingBox,
 									matrixWidth, matrixHeight, column, row);
 
@@ -678,13 +678,13 @@ public class TileReader {
 								if (yFile != null) {
 
 									// Get the bounding box of the x, y, z image
-									BoundingBox imageBoundingBox = TileBoundingBoxUtils
+									GeometryEnvelope imageBoundingBox = TileBoundingBoxUtils
 											.getWebMercatorBoundingBox(x, y,
 													zoomDirectory.zoom);
 
 									// Get the bounding box overlap between the
 									// column/row image and the x,y,z image
-									BoundingBox overlap = TileBoundingBoxUtils
+									GeometryEnvelope overlap = GeometryEnvelope
 											.overlap(tileMatrixBoundingBox,
 													imageBoundingBox);
 

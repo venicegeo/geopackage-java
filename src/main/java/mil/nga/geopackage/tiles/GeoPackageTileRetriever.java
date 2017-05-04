@@ -1,10 +1,10 @@
 package mil.nga.geopackage.tiles;
 
-import mil.nga.geopackage.BoundingBox;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
 import mil.nga.geopackage.tiles.user.TileDao;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
 
 /**
  * GeoPackage Tile Retriever, retrieves a tile from a GeoPackage from XYZ
@@ -73,7 +73,7 @@ public class GeoPackageTileRetriever implements TileRetriever {
 	public boolean hasTile(int x, int y, int zoom) {
 
 		// Get the bounding box of the requested tile
-		BoundingBox webMercatorBoundingBox = TileBoundingBoxUtils
+		GeometryEnvelope webMercatorBoundingBox = TileBoundingBoxUtils
 				.getWebMercatorBoundingBox(x, y, zoom);
 
 		boolean hasTile = tileCreator.hasTile(webMercatorBoundingBox);
@@ -88,7 +88,7 @@ public class GeoPackageTileRetriever implements TileRetriever {
 	public GeoPackageTile getTile(int x, int y, int zoom) {
 
 		// Get the bounding box of the requested tile
-		BoundingBox webMercatorBoundingBox = TileBoundingBoxUtils
+		GeometryEnvelope webMercatorBoundingBox = TileBoundingBoxUtils
 				.getWebMercatorBoundingBox(x, y, zoom);
 
 		GeoPackageTile tile = tileCreator.getTile(webMercatorBoundingBox);

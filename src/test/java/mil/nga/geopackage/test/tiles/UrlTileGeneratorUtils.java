@@ -5,11 +5,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import junit.framework.TestCase;
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
 import mil.nga.geopackage.test.TestUtils;
 import mil.nga.geopackage.test.io.TestGeoPackageProgress;
 import mil.nga.geopackage.tiles.TileBoundingBoxUtils;
@@ -20,7 +19,8 @@ import mil.nga.geopackage.tiles.matrix.TileMatrix;
 import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.geopackage.tiles.user.TileResultSet;
 import mil.nga.geopackage.tiles.user.TileRow;
-import mil.nga.wkb.geom.Point;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.Position;
 
 /**
  * URL Tile Generator utils
@@ -111,7 +111,7 @@ public class UrlTileGeneratorUtils {
 			throws SQLException, IOException {
 
 		UrlTileGenerator tileGenerator = new UrlTileGenerator(geoPackage,
-				TABLE_NAME, URL, 1, 2, new BoundingBox(-10, 10, -10, 10),
+				TABLE_NAME, URL, 1, 2, new GeometryEnvelope(-10d, -10d, 10d, 10d),
 				getProjection());
 
 		testGenerateTiles(tileGenerator);
@@ -128,7 +128,7 @@ public class UrlTileGeneratorUtils {
 			throws SQLException, IOException {
 
 		UrlTileGenerator tileGenerator = new UrlTileGenerator(geoPackage,
-				TABLE_NAME, URL, 1, 2, new BoundingBox(-10, 10, -10, 10),
+				TABLE_NAME, URL, 1, 2, new GeometryEnvelope(-10d, -10d, 10d, 10d),
 				getProjection());
 		tileGenerator.setGoogleTiles(true);
 
@@ -149,12 +149,13 @@ public class UrlTileGeneratorUtils {
 
 			int minZoom = (int) (Math.random() * 3.0);
 			int maxZoom = minZoom + ((int) (Math.random() * 3.0));
-			Point point1 = TestUtils.createPoint(false, false);
-			Point point2 = TestUtils.createPoint(false, false);
-			BoundingBox boundingBox = new BoundingBox(Math.min(point1.getX(),
-					point2.getX()), Math.max(point1.getX(), point2.getX()),
-					Math.min(point1.getY(), point2.getY()), Math.max(
-							point1.getY(), point2.getY()));
+			Position position1 = TestUtils.createPosition(false, false);
+			Position position2 = TestUtils.createPosition(false, false);
+			GeometryEnvelope boundingBox = new GeometryEnvelope(
+					Math.min(position1.getX(),	position2.getX()), 
+					Math.min(position1.getY(), position2.getY()), 
+					Math.max(position1.getX(), position2.getX()),
+					Math.max(position1.getY(), position2.getY()));
 			UrlTileGenerator tileGenerator = new UrlTileGenerator(geoPackage,
 					TABLE_NAME + i, URL, minZoom, maxZoom, boundingBox,
 					getProjection());
@@ -182,13 +183,13 @@ public class UrlTileGeneratorUtils {
 		TestCase.assertEquals(0, count);
 	}
 
-	private static BoundingBox getBoundingBox() {
-		BoundingBox boundingBox = new BoundingBox();
-		boundingBox = getBoundingBox(boundingBox);
+	private static GeometryEnvelope getBoundingBox() {
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-180d, -90d, 180d, 90d);
+		boundingBox = getWebMercatorBoundingBox(boundingBox);
 		return boundingBox;
 	}
 
-	private static BoundingBox getBoundingBox(BoundingBox boundingBox) {
+	private static GeometryEnvelope getWebMercatorBoundingBox(GeometryEnvelope boundingBox) {
 		boundingBox = TileBoundingBoxUtils
 				.boundWgs84BoundingBoxWithWebMercatorLimits(boundingBox);
 		boundingBox = ProjectionFactory
@@ -217,7 +218,7 @@ public class UrlTileGeneratorUtils {
 		String tableName = tileGenerator.getTableName();
 		int minZoom = tileGenerator.getMinZoom();
 		int maxZoom = tileGenerator.getMaxZoom();
-		BoundingBox webMercatorBoundingBox = tileGenerator.getBoundingBox();
+		GeometryEnvelope webMercatorBoundingBox = tileGenerator.getBoundingBox();
 
 		TestGeoPackageProgress progress = new TestGeoPackageProgress();
 		tileGenerator.setProgress(progress);
@@ -233,14 +234,14 @@ public class UrlTileGeneratorUtils {
 		TestCase.assertEquals(minZoom, tileDao.getMinZoom());
 		TestCase.assertEquals(maxZoom, tileDao.getMaxZoom());
 
-		BoundingBox tileMatrixSetBoundingBox = tileDao.getBoundingBox();
+		GeometryEnvelope tileMatrixSetBoundingBox = tileDao.getBoundingBox();
 
 		for (int zoom = minZoom; zoom <= maxZoom; zoom++) {
 			TileGrid expectedTileGrid = TileBoundingBoxUtils.getTileGrid(
 					webMercatorBoundingBox, zoom);
-			BoundingBox expectedBoundingBox = TileBoundingBoxUtils
+			GeometryEnvelope expectedBoundingBox = TileBoundingBoxUtils
 					.getWebMercatorBoundingBox(expectedTileGrid, zoom);
-			BoundingBox zoomBoundingBox = tileDao.getBoundingBox(zoom);
+			GeometryEnvelope zoomBoundingBox = tileDao.getBoundingBox(zoom);
 			TestCase.assertEquals(expectedBoundingBox.getMinLongitude(),
 					zoomBoundingBox.getMinLongitude(), .000001);
 			TestCase.assertEquals(expectedBoundingBox.getMaxLongitude(),
@@ -293,7 +294,7 @@ public class UrlTileGeneratorUtils {
 	 * @param maxZoom
 	 * @return
 	 */
-	private static long expectedTiles(BoundingBox webMercatorBoundingBox,
+	private static long expectedTiles(GeometryEnvelope webMercatorBoundingBox,
 			int minZoom, int maxZoom) {
 		long tiles = 0;
 		for (int zoom = minZoom; zoom <= maxZoom; zoom++) {
@@ -309,7 +310,7 @@ public class UrlTileGeneratorUtils {
 	 * @param zoom
 	 * @return
 	 */
-	private static long expectedTiles(BoundingBox webMercatorBoundingBox,
+	private static long expectedTiles(GeometryEnvelope webMercatorBoundingBox,
 			int zoom) {
 		TileGrid tileGrid = TileBoundingBoxUtils.getTileGrid(
 				webMercatorBoundingBox, zoom);

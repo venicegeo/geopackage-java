@@ -8,28 +8,29 @@ import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackageException;
 import mil.nga.geopackage.extension.index.GeometryIndex;
 import mil.nga.geopackage.features.user.FeatureDao;
 import mil.nga.geopackage.features.user.FeatureResultSet;
 import mil.nga.geopackage.features.user.FeatureRow;
 import mil.nga.geopackage.geom.GeoPackageGeometryData;
-import mil.nga.geopackage.projection.ProjectionTransform;
 import mil.nga.geopackage.tiles.TileBoundingBoxUtils;
-import mil.nga.wkb.geom.CircularString;
-import mil.nga.wkb.geom.CompoundCurve;
-import mil.nga.wkb.geom.Geometry;
-import mil.nga.wkb.geom.GeometryCollection;
-import mil.nga.wkb.geom.LineString;
-import mil.nga.wkb.geom.MultiLineString;
-import mil.nga.wkb.geom.MultiPoint;
-import mil.nga.wkb.geom.MultiPolygon;
-import mil.nga.wkb.geom.Point;
-import mil.nga.wkb.geom.Polygon;
-import mil.nga.wkb.geom.PolyhedralSurface;
-import mil.nga.wkb.geom.TIN;
-import mil.nga.wkb.geom.Triangle;
+import mil.nga.sf.CircularString;
+import mil.nga.sf.CompoundCurve;
+import mil.nga.sf.Geometry;
+import mil.nga.sf.GeometryCollection;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.LineString;
+import mil.nga.sf.MultiLineString;
+import mil.nga.sf.MultiPoint;
+import mil.nga.sf.MultiPolygon;
+import mil.nga.sf.Point;
+import mil.nga.sf.Polygon;
+import mil.nga.sf.PolyhedralSurface;
+import mil.nga.sf.Position;
+import mil.nga.sf.TIN;
+import mil.nga.sf.Triangle;
+import mil.nga.sf.projection.ProjectionTransform;
 
 import com.j256.ormlite.dao.CloseableIterator;
 
@@ -54,7 +55,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public BufferedImage drawTile(BoundingBox webMercatorBoundingBox,
+	public BufferedImage drawTile(GeometryEnvelope webMercatorBoundingBox,
 			CloseableIterator<GeometryIndex> results) {
 
 		// Create image and graphics
@@ -79,7 +80,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public BufferedImage drawTile(BoundingBox boundingBox,
+	public BufferedImage drawTile(GeometryEnvelope boundingBox,
 			FeatureResultSet resultSet) {
 
 		BufferedImage image = createNewImage();
@@ -101,7 +102,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public BufferedImage drawTile(BoundingBox boundingBox,
+	public BufferedImage drawTile(GeometryEnvelope boundingBox,
 			List<FeatureRow> featureRow) {
 
 		BufferedImage image = createNewImage();
@@ -137,7 +138,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * @param graphics
 	 * @param row
 	 */
-	private void drawFeature(BoundingBox boundingBox,
+	private void drawFeature(GeometryEnvelope boundingBox,
 			ProjectionTransform transform, Graphics2D graphics, FeatureRow row) {
 		GeoPackageGeometryData geomData = row.getGeometry();
 		if (geomData != null) {
@@ -154,7 +155,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * @param graphics
 	 * @param geometry
 	 */
-	private void drawGeometry(BoundingBox boundingBox,
+	private void drawGeometry(GeometryEnvelope boundingBox,
 			ProjectionTransform transform, Graphics2D graphics,
 			Geometry geometry) {
 
@@ -174,8 +175,8 @@ public class DefaultFeatureTiles extends FeatureTiles {
 			break;
 		case MULTIPOINT:
 			MultiPoint multiPoint = (MultiPoint) geometry;
-			for (Point p : multiPoint.getPoints()) {
-				drawPoint(boundingBox, transform, graphics, p);
+			for (Position p : multiPoint.getPositions()) {
+				drawPosition(boundingBox, transform, graphics, p);
 			}
 			break;
 		case MULTILINESTRING:
@@ -238,7 +239,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * @param graphics
 	 * @param lineString
 	 */
-	private void drawLineString(BoundingBox boundingBox,
+	private void drawLineString(GeometryEnvelope boundingBox,
 			ProjectionTransform transform, Graphics2D graphics,
 			LineString lineString) {
 		Path2D path = getPath(boundingBox, transform, lineString);
@@ -253,7 +254,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * @param graphics
 	 * @param polygon
 	 */
-	private void drawPolygon(BoundingBox boundingBox,
+	private void drawPolygon(GeometryEnvelope boundingBox,
 			ProjectionTransform transform, Graphics2D graphics, Polygon polygon) {
 		Area polygonArea = getArea(boundingBox, transform, polygon);
 		drawPolygon(graphics, polygonArea);
@@ -266,19 +267,19 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * @param transform
 	 * @param lineString
 	 */
-	private Path2D getPath(BoundingBox boundingBox,
+	private Path2D getPath(GeometryEnvelope boundingBox,
 			ProjectionTransform transform, LineString lineString) {
 
 		Path2D path = null;
 
-		for (Point point : lineString.getPoints()) {
+		for (Position position : lineString.getPositions()) {
 
-			Point projectedPoint = transform.transform(point);
+			Position projectedPosition = transform.transform(position);
 
 			float x = TileBoundingBoxUtils.getXPixel(tileWidth, boundingBox,
-					projectedPoint.getX());
+					projectedPosition.getX());
 			float y = TileBoundingBoxUtils.getYPixel(tileHeight, boundingBox,
-					projectedPoint.getY());
+					projectedPosition.getY());
 
 			if (path == null) {
 				path = new Path2D.Double();
@@ -311,7 +312,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * @param transform
 	 * @param lineString
 	 */
-	private Area getArea(BoundingBox boundingBox,
+	private Area getArea(GeometryEnvelope boundingBox,
 			ProjectionTransform transform, Polygon polygon) {
 
 		Area area = null;
@@ -351,6 +352,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 
 	}
 
+
 	/**
 	 * Draw the point
 	 *
@@ -359,15 +361,28 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * @param graphics
 	 * @param point
 	 */
-	private void drawPoint(BoundingBox boundingBox,
+	private void drawPoint(GeometryEnvelope boundingBox,
 			ProjectionTransform transform, Graphics2D graphics, Point point) {
 
-		Point projectedPoint = transform.transform(point);
+		drawPosition(boundingBox, transform, graphics, point.getPosition());
+	}
+	/**
+	 * Draw the position
+	 *
+	 * @param boundingBox
+	 * @param transform
+	 * @param graphics
+	 * @param point
+	 */
+	private void drawPosition(GeometryEnvelope boundingBox,
+			ProjectionTransform transform, Graphics2D graphics, Position position) {
+
+		Position projectedPosition = transform.transform(position);
 
 		float x = TileBoundingBoxUtils.getXPixel(tileWidth, boundingBox,
-				projectedPoint.getX());
+				projectedPosition.getX());
 		float y = TileBoundingBoxUtils.getYPixel(tileHeight, boundingBox,
-				projectedPoint.getY());
+				projectedPosition.getY());
 
 		if (pointIcon != null) {
 			if (x >= 0 - pointIcon.getWidth()

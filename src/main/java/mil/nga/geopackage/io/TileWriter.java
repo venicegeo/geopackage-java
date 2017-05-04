@@ -11,14 +11,8 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
-import mil.nga.geopackage.core.srs.SpatialReferenceSystem;
 import mil.nga.geopackage.manager.GeoPackageManager;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
 import mil.nga.geopackage.tiles.GeoPackageTile;
 import mil.nga.geopackage.tiles.GeoPackageTileRetriever;
 import mil.nga.geopackage.tiles.ImageUtils;
@@ -28,6 +22,12 @@ import mil.nga.geopackage.tiles.matrix.TileMatrix;
 import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.geopackage.tiles.user.TileResultSet;
 import mil.nga.geopackage.tiles.user.TileRow;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
+import mil.nga.sf.srs.SpatialReferenceSystem;
 
 /**
  * Writes the tiles from a GeoPackage tile table to a file system directory
@@ -512,12 +512,12 @@ public class TileWriter {
 				.getTransformation(webMercator);
 
 		// Get the bounding box of actual tiles
-		BoundingBox zoomBoundingBox = tileDao.getBoundingBox();
+		GeometryEnvelope zoomBoundingBox = tileDao.getBoundingBox();
 		if (projection.getEpsg() == ProjectionConstants.EPSG_WORLD_GEODETIC_SYSTEM) {
 			zoomBoundingBox = TileBoundingBoxUtils
 					.boundWgs84BoundingBoxWithWebMercatorLimits(zoomBoundingBox);
 		}
-		BoundingBox zoomWebMercatorBoundingBox = projectionToWebMercator
+		GeometryEnvelope zoomWebMercatorBoundingBox = projectionToWebMercator
 				.transform(zoomBoundingBox);
 
 		GeoPackageTileRetriever retriever = null;
@@ -532,28 +532,28 @@ public class TileWriter {
 		double minLength = tileDao.getMinLength();
 
 		double upperMax = getLength(
-				new BoundingBox(zoomBoundingBox.getMinLongitude(),
-						zoomBoundingBox.getMinLongitude() + maxLength,
+				new GeometryEnvelope(zoomBoundingBox.getMinLongitude(),
 						zoomBoundingBox.getMaxLatitude() - maxLength,
+						zoomBoundingBox.getMinLongitude() + maxLength,
 						zoomBoundingBox.getMaxLatitude()),
 				projectionToWebMercator);
 		double upperMin = getLength(
-				new BoundingBox(zoomBoundingBox.getMinLongitude(),
-						zoomBoundingBox.getMinLongitude() + minLength,
+				new GeometryEnvelope(zoomBoundingBox.getMinLongitude(),
 						zoomBoundingBox.getMaxLatitude() - minLength,
+						zoomBoundingBox.getMinLongitude() + minLength,
 						zoomBoundingBox.getMaxLatitude()),
 				projectionToWebMercator);
 
 		double lowerMax = getLength(
-				new BoundingBox(zoomBoundingBox.getMinLongitude(),
-						zoomBoundingBox.getMinLongitude() + maxLength,
+				new GeometryEnvelope(zoomBoundingBox.getMinLongitude(),
 						zoomBoundingBox.getMinLatitude(),
+						zoomBoundingBox.getMinLongitude() + maxLength,
 						zoomBoundingBox.getMinLatitude() + maxLength),
 				projectionToWebMercator);
 		double lowerMin = getLength(
-				new BoundingBox(zoomBoundingBox.getMinLongitude(),
-						zoomBoundingBox.getMinLongitude() + minLength,
+				new GeometryEnvelope(zoomBoundingBox.getMinLongitude(),
 						zoomBoundingBox.getMinLatitude(),
+						zoomBoundingBox.getMinLongitude() + minLength,
 						zoomBoundingBox.getMinLatitude() + minLength),
 				projectionToWebMercator);
 
@@ -652,9 +652,9 @@ public class TileWriter {
 	 * @param toWebMercatorTransform
 	 * @return length
 	 */
-	private static double getLength(BoundingBox boundingBox,
+	private static double getLength(GeometryEnvelope boundingBox,
 			ProjectionTransform toWebMercatorTransform) {
-		BoundingBox transformedBoundingBox = toWebMercatorTransform
+		GeometryEnvelope transformedBoundingBox = toWebMercatorTransform
 				.transform(boundingBox);
 		return getLength(transformedBoundingBox);
 	}
@@ -665,7 +665,7 @@ public class TileWriter {
 	 * @param boundingBox
 	 * @return length
 	 */
-	private static double getLength(BoundingBox boundingBox) {
+	private static double getLength(GeometryEnvelope boundingBox) {
 
 		double width = boundingBox.getMaxLongitude()
 				- boundingBox.getMinLongitude();

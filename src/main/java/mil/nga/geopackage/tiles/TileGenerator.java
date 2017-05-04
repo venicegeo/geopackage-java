@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.GeoPackageException;
 import mil.nga.geopackage.core.contents.Contents;
@@ -17,10 +16,6 @@ import mil.nga.geopackage.core.contents.ContentsDao;
 import mil.nga.geopackage.core.srs.SpatialReferenceSystem;
 import mil.nga.geopackage.core.srs.SpatialReferenceSystemDao;
 import mil.nga.geopackage.io.GeoPackageZoomLevelProgress;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
 import mil.nga.geopackage.tiles.matrix.TileMatrix;
 import mil.nga.geopackage.tiles.matrix.TileMatrixDao;
 import mil.nga.geopackage.tiles.matrix.TileMatrixKey;
@@ -30,6 +25,11 @@ import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.geopackage.tiles.user.TileResultSet;
 import mil.nga.geopackage.tiles.user.TileRow;
 import mil.nga.geopackage.tiles.user.TileTable;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
 
 import org.osgeo.proj4j.units.DegreeUnit;
 
@@ -85,7 +85,7 @@ public abstract class TileGenerator {
 	/**
 	 * Tile bounding box
 	 */
-	protected BoundingBox boundingBox;
+	protected GeometryEnvelope boundingBox;
 
 	/**
 	 * Compress format
@@ -112,7 +112,7 @@ public abstract class TileGenerator {
 	/**
 	 * Tile grid bounding box
 	 */
-	private BoundingBox tileGridBoundingBox;
+	private GeometryEnvelope tileGridBoundingBox;
 
 	/**
 	 * Matrix height when GeoPackage tile format
@@ -142,7 +142,7 @@ public abstract class TileGenerator {
 	 * @since 1.2.0
 	 */
 	public TileGenerator(GeoPackage geoPackage, String tableName, int minZoom,
-			int maxZoom, BoundingBox boundingBox, Projection projection) {
+			int maxZoom, GeometryEnvelope boundingBox, Projection projection) {
 		geoPackage.verifyWritable();
 		this.geoPackage = geoPackage;
 		this.tableName = tableName;
@@ -195,7 +195,7 @@ public abstract class TileGenerator {
 	 * 
 	 * @return bounding box
 	 */
-	public BoundingBox getBoundingBox() {
+	public GeometryEnvelope getBoundingBox() {
 		return boundingBox;
 	}
 
@@ -291,7 +291,7 @@ public abstract class TileGenerator {
 	public int getTileCount() {
 		if (tileCount == null) {
 			int count = 0;
-			BoundingBox requestBoundingBox = null;
+			GeometryEnvelope requestBoundingBox = null;
 			if (projection.getUnit() instanceof DegreeUnit) {
 				requestBoundingBox = boundingBox;
 			} else {
@@ -440,7 +440,7 @@ public abstract class TileGenerator {
 	 * @param zoom
 	 *            zoom
 	 */
-	private void adjustBounds(BoundingBox boundingBox, int zoom) {
+	private void adjustBounds(GeometryEnvelope boundingBox, int zoom) {
 		// Google Tile Format
 		if (googleTiles) {
 			adjustGoogleBounds();
@@ -456,8 +456,9 @@ public abstract class TileGenerator {
 	 */
 	private void adjustGoogleBounds() {
 		// Set the tile matrix set bounding box to be the world
-		BoundingBox standardWgs84Box = new BoundingBox(-180.0, 180.0,
+		GeometryEnvelope standardWgs84Box = new GeometryEnvelope(-180.0, 
 				ProjectionConstants.WEB_MERCATOR_MIN_LAT_RANGE,
+				180.0,
 				ProjectionConstants.WEB_MERCATOR_MAX_LAT_RANGE);
 		ProjectionTransform wgs84ToWebMercatorTransform = ProjectionFactory
 				.getProjection(ProjectionConstants.EPSG_WORLD_GEODETIC_SYSTEM)
@@ -473,7 +474,7 @@ public abstract class TileGenerator {
 	 * @param boundingBox
 	 * @param zoom
 	 */
-	private void adjustGeoPackageBoundsWGS84(BoundingBox boundingBox, int zoom) {
+	private void adjustGeoPackageBoundsWGS84(GeometryEnvelope boundingBox, int zoom) {
 		// Get the fitting tile grid and determine the bounding box that fits it
 		TileGrid tileGrid = TileBoundingBoxUtils.getTileGridWGS84(boundingBox,
 				zoom);
@@ -491,7 +492,7 @@ public abstract class TileGenerator {
 	 * @param zoom
 	 */
 	private void adjustGeoPackageBounds(
-			BoundingBox requestWebMercatorBoundingBox, int zoom) {
+			GeometryEnvelope requestWebMercatorBoundingBox, int zoom) {
 		// Get the fitting tile grid and determine the bounding box that
 		// fits it
 		TileGrid tileGrid = TileBoundingBoxUtils.getTileGrid(
@@ -539,13 +540,13 @@ public abstract class TileGenerator {
 		Contents contents = tileMatrixSet.getContents();
 
 		// Combine the existing content and request bounding boxes
-		BoundingBox previousContentsBoundingBox = contents.getBoundingBox();
+		GeometryEnvelope previousContentsBoundingBox = contents.getBoundingBox();
 		ProjectionTransform transformProjectionToContents = projection
 				.getTransformation(ProjectionFactory.getProjection(contents
 						.getSrs()));
-		BoundingBox contentsBoundingBox = transformProjectionToContents
+		GeometryEnvelope contentsBoundingBox = transformProjectionToContents
 				.transform(boundingBox);
-		contentsBoundingBox = TileBoundingBoxUtils.union(contentsBoundingBox,
+		contentsBoundingBox = GeometryEnvelope.union(contentsBoundingBox,
 				previousContentsBoundingBox);
 
 		// Update the contents if modified
@@ -559,24 +560,24 @@ public abstract class TileGenerator {
 		// rows needs to be adjusted
 		if (!googleTiles) {
 
-			BoundingBox previousTileMatrixSetBoundingBox = tileMatrixSet
+			GeometryEnvelope previousTileMatrixSetBoundingBox = tileMatrixSet
 					.getBoundingBox();
 
 			// Adjust the bounds to include the request and existing bounds
 			ProjectionTransform transformProjectionToTileMatrixSet = projection
 					.getTransformation(tileMatrixProjection);
-			BoundingBox updateBoundingBox = transformProjectionToTileMatrixSet
+			GeometryEnvelope updateBoundingBox = transformProjectionToTileMatrixSet
 					.transform(boundingBox);
 			int minNewOrUpdateZoom = Math.min(minZoom,
 					(int) tileDao.getMinZoom());
 			adjustBounds(updateBoundingBox, minNewOrUpdateZoom);
 
 			// Update the tile matrix set if modified
-			BoundingBox updateTileGridBoundingBox = transformProjectionToTileMatrixSet
+			GeometryEnvelope updateTileGridBoundingBox = transformProjectionToTileMatrixSet
 					.transform(tileGridBoundingBox);
 			if (!previousTileMatrixSetBoundingBox
 					.equals(updateTileGridBoundingBox)) {
-				updateTileGridBoundingBox = TileBoundingBoxUtils.union(
+				updateTileGridBoundingBox = GeometryEnvelope.union(
 						updateTileGridBoundingBox,
 						previousTileMatrixSetBoundingBox);
 				tileMatrixSet.setBoundingBox(updateTileGridBoundingBox);
@@ -611,7 +612,7 @@ public abstract class TileGenerator {
 							TileRow tileRow = tileResultSet.getRow();
 
 							// Get the bounding box of the existing tile
-							BoundingBox tileBoundingBox = TileBoundingBoxUtils
+							GeometryEnvelope tileBoundingBox = TileBoundingBoxUtils
 									.getBoundingBox(
 											previousTileMatrixSetBoundingBox,
 											tileMatrix,

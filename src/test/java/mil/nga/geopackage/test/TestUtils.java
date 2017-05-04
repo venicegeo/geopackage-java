@@ -35,11 +35,13 @@ import mil.nga.geopackage.tiles.user.TileColumn;
 import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.geopackage.tiles.user.TileRow;
 import mil.nga.geopackage.tiles.user.TileTable;
-import mil.nga.wkb.geom.Geometry;
-import mil.nga.wkb.geom.GeometryType;
-import mil.nga.wkb.geom.LineString;
-import mil.nga.wkb.geom.Point;
-import mil.nga.wkb.geom.Polygon;
+import mil.nga.sf.Geometry;
+import mil.nga.sf.GeometryType;
+import mil.nga.sf.LineString;
+import mil.nga.sf.LinearRing;
+import mil.nga.sf.Point;
+import mil.nga.sf.Polygon;
+import mil.nga.sf.Position;
 
 /**
  * Test utility methods
@@ -203,7 +205,7 @@ public class TestUtils {
 							geometry = createPoint(hasZ, hasM);
 							break;
 						case LINESTRING:
-							geometry = createLineString(hasZ, hasM, false);
+							geometry = createLineString(hasZ, hasM);
 							break;
 						case POLYGON:
 							geometry = createPolygon(hasZ, hasM);
@@ -306,6 +308,23 @@ public class TestUtils {
 	}
 
 	/**
+	 * Create a random position
+	 * 
+	 * @param hasZ
+	 * @param hasM
+	 * @return position
+	 */
+	public static Position createPosition(boolean hasZ, boolean hasM) {
+
+		double x = Math.random() * 180.0 * (Math.random() < .5 ? 1 : -1);
+		double y = Math.random() * 90.0 * (Math.random() < .5 ? 1 : -1);
+		Double z = hasZ ? Math.random() * 1000.0 : null;
+		Double m = hasM ? Math.random() * 1000.0 : null;
+
+		return new Position(x, y, z, m);
+	}
+
+	/**
 	 * Create a random point
 	 * 
 	 * @param hasZ
@@ -314,22 +333,7 @@ public class TestUtils {
 	 */
 	public static Point createPoint(boolean hasZ, boolean hasM) {
 
-		double x = Math.random() * 180.0 * (Math.random() < .5 ? 1 : -1);
-		double y = Math.random() * 90.0 * (Math.random() < .5 ? 1 : -1);
-
-		Point point = new Point(hasZ, hasM, x, y);
-
-		if (hasZ) {
-			double z = Math.random() * 1000.0;
-			point.setZ(z);
-		}
-
-		if (hasM) {
-			double m = Math.random() * 1000.0;
-			point.setM(m);
-		}
-
-		return point;
+		return new Point(createPosition(hasZ, hasM));
 	}
 
 	/**
@@ -337,25 +341,31 @@ public class TestUtils {
 	 * 
 	 * @param hasZ
 	 * @param hasM
-	 * @param ring
 	 * @return line string
 	 */
-	public static LineString createLineString(boolean hasZ, boolean hasM,
-			boolean ring) {
+	public static LineString createLineString(boolean hasZ, boolean hasM) {
 
 		LineString lineString = new LineString(hasZ, hasM);
 
 		int numPoints = 2 + ((int) (Math.random() * 9));
 
 		for (int i = 0; i < numPoints; i++) {
-			lineString.addPoint(createPoint(hasZ, hasM));
-		}
-
-		if (ring) {
-			lineString.addPoint(lineString.getPoints().get(0));
+			lineString.addPosition(createPosition(hasZ, hasM));
 		}
 
 		return lineString;
+	}
+
+	/**
+	 * Create a random linear ring
+	 * 
+	 * @param hasZ
+	 * @param hasM
+	 * @return linear ring
+	 */
+	public static LinearRing createLinearRing(boolean hasZ, boolean hasM) {
+
+		return new LinearRing(createLineString(hasZ, hasM));
 	}
 
 	/**
@@ -372,7 +382,7 @@ public class TestUtils {
 		int numLineStrings = 1 + ((int) (Math.random() * 5));
 
 		for (int i = 0; i < numLineStrings; i++) {
-			polygon.addRing(createLineString(hasZ, hasM, true));
+			polygon.addRing(createLinearRing(hasZ, hasM));
 		}
 
 		return polygon;

@@ -5,10 +5,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import junit.framework.TestCase;
-import mil.nga.geopackage.BoundingBox;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
 import mil.nga.geopackage.test.TestConstants;
 import mil.nga.geopackage.test.TilesGeoPackageTestCase;
 import mil.nga.geopackage.tiles.GeoPackageTile;
@@ -57,12 +57,12 @@ public class TileCreatorGetTileTest extends TilesGeoPackageTestCase {
 		TileCreator tileCreator = new TileCreator(tileDao, width, height,
 				wgs84, "png");
 
-		BoundingBox boundingBox = new BoundingBox();
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-180d, -90d, 180, 90);
 		boundingBox = TileBoundingBoxUtils
 				.boundWgs84BoundingBoxWithWebMercatorLimits(boundingBox);
 		TestCase.assertFalse(tileCreator.hasTile(boundingBox));
 
-		boundingBox = new BoundingBox(-180.0, 0.0, 0.0, 90.0);
+		boundingBox = new GeometryEnvelope(-180.0, 0.0, 0.0, 90.0);
 		boundingBox = TileBoundingBoxUtils
 				.boundWgs84BoundingBoxWithWebMercatorLimits(boundingBox);
 		TestCase.assertTrue(tileCreator.hasTile(boundingBox));
@@ -80,7 +80,7 @@ public class TileCreatorGetTileTest extends TilesGeoPackageTestCase {
 		TestCase.assertEquals(height, image.getHeight());
 		validateImage(image);
 
-		boundingBox = new BoundingBox(-90.0, 0.0, 0.0, 45.0);
+		boundingBox = new GeometryEnvelope(-90.0, 0.0, 0.0, 45.0);
 		TestCase.assertTrue(tileCreator.hasTile(boundingBox));
 
 		tile = tileCreator.getTile(boundingBox);
@@ -117,12 +117,12 @@ public class TileCreatorGetTileTest extends TilesGeoPackageTestCase {
 		int height = 256;
 		TileCreator tileCreator = new TileCreator(tileDao);
 
-		BoundingBox boundingBox = new BoundingBox();
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-180d, -90d, 180, 90);
 		boundingBox = TileBoundingBoxUtils
 				.boundWgs84BoundingBoxWithWebMercatorLimits(boundingBox);
 		TestCase.assertFalse(tileCreator.hasTile(boundingBox));
 
-		boundingBox = new BoundingBox(-180.0, 0.0, 0.0, 90.0);
+		boundingBox = new GeometryEnvelope(-180.0, 0.0, 0.0, 90.0);
 		boundingBox = TileBoundingBoxUtils.toWebMercator(boundingBox);
 		TestCase.assertTrue(tileCreator.hasTile(boundingBox));
 
@@ -140,7 +140,7 @@ public class TileCreatorGetTileTest extends TilesGeoPackageTestCase {
 		TestCase.assertEquals(height, image.getHeight());
 		validateImage(image);
 
-		boundingBox = new BoundingBox(-10018754.171394622, 0.0, 0.0, 10018754.17139462);
+		boundingBox = new GeometryEnvelope(-10018754.171394622, 0.0, 0.0, 10018754.17139462);
 		TestCase.assertTrue(tileCreator.hasTile(boundingBox));
 
 		tile = tileCreator.getTile(boundingBox);
@@ -158,7 +158,7 @@ public class TileCreatorGetTileTest extends TilesGeoPackageTestCase {
 		validateImage(image);
 
 		// Test a raw image request when the bounds do not line up
-		boundingBox = new BoundingBox(-10018754.171394622, 0.0, 0.0, 5009377.085697312);
+		boundingBox = new GeometryEnvelope(-10018754.171394622, 0.0, 0.0, 5009377.085697312);
 		TestCase.assertTrue(tileCreator.hasTile(boundingBox));
 
 		try {

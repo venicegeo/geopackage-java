@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.core.srs.SpatialReferenceSystem;
 import mil.nga.geopackage.db.GeoPackageDataType;
@@ -20,7 +19,8 @@ import mil.nga.geopackage.tiles.matrix.TileMatrixDao;
 import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
 import mil.nga.geopackage.tiles.matrixset.TileMatrixSetDao;
 import mil.nga.geopackage.tiles.user.TileDao;
-import mil.nga.wkb.geom.GeometryType;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.GeometryType;
 
 /**
  * GeoPackage Utility test methods
@@ -44,7 +44,7 @@ public class GeoPackageTestUtils {
 		geometryColumns.setZ((byte) 1);
 		geometryColumns.setM((byte) 0);
 
-		BoundingBox boundingBox = new BoundingBox(-90, 90, 45, 45);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-90, 90, 45, 45);
 
 		SpatialReferenceSystem srs = geoPackage.getSpatialReferenceSystemDao()
 				.createWebMercator();
@@ -70,7 +70,7 @@ public class GeoPackageTestUtils {
 		geometryColumns.setZ((byte) 1);
 		geometryColumns.setM((byte) 0);
 
-		BoundingBox boundingBox = new BoundingBox(-90, 90, 45, 45);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-90, 45, 90, 45);
 
 		SpatialReferenceSystem srs = geoPackage.getSpatialReferenceSystemDao()
 				.createWebMercator();
@@ -97,7 +97,7 @@ public class GeoPackageTestUtils {
 		geometryColumns.setZ((byte) 1);
 		geometryColumns.setM((byte) 0);
 
-		BoundingBox boundingBox = new BoundingBox(-90, 90, 45, 45);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-90, 45, 90, 45);
 
 		List<FeatureColumn> additionalColumns = getFeatureColumns();
 
@@ -126,7 +126,7 @@ public class GeoPackageTestUtils {
 		geometryColumns.setZ((byte) 1);
 		geometryColumns.setM((byte) 0);
 
-		BoundingBox boundingBox = new BoundingBox(-90, 90, 45, 45);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-90, 45, 90, 45);
 
 		List<FeatureColumn> additionalColumns = getFeatureColumns();
 

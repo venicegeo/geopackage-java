@@ -1,12 +1,12 @@
 package mil.nga.geopackage.extension.elevation;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.GeoPackageException;
-import mil.nga.geopackage.projection.Projection;
 import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
 import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.geopackage.tiles.user.TileRow;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
 import mil.nga.tiff.FileDirectory;
 import mil.nga.tiff.Rasters;
 import mil.nga.tiff.TIFFImage;
@@ -481,8 +481,8 @@ public class ElevationTilesTiff extends
 	 */
 	public static ElevationTilesTiff createTileTableWithMetadata(
 			GeoPackage geoPackage, String tableName,
-			BoundingBox contentsBoundingBox, long contentsSrsId,
-			BoundingBox tileMatrixSetBoundingBox, long tileMatrixSetSrsId) {
+			GeometryEnvelope contentsBoundingBox, long contentsSrsId,
+			GeometryEnvelope tileMatrixSetBoundingBox, long tileMatrixSetSrsId) {
 
 		TileMatrixSet tileMatrixSet = ElevationTilesCore
 				.createTileTableWithMetadata(geoPackage, tableName,

@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 
 import junit.framework.TestCase;
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.extension.ExtensionScopeType;
 import mil.nga.geopackage.extension.Extensions;
@@ -20,16 +19,17 @@ import mil.nga.geopackage.features.user.FeatureDao;
 import mil.nga.geopackage.features.user.FeatureResultSet;
 import mil.nga.geopackage.features.user.FeatureRow;
 import mil.nga.geopackage.geom.GeoPackageGeometryData;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionConstants;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionConstants;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
 import mil.nga.geopackage.test.TestUtils;
 import mil.nga.geopackage.test.io.TestGeoPackageProgress;
-import mil.nga.wkb.geom.Geometry;
-import mil.nga.wkb.geom.GeometryEnvelope;
-import mil.nga.wkb.geom.Point;
-import mil.nga.wkb.util.GeometryEnvelopeBuilder;
+import mil.nga.sf.Geometry;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.Point;
+import mil.nga.sf.Position;
+import mil.nga.sf.util.GeometryEnvelopeBuilder;
 
 import com.j256.ormlite.dao.CloseableIterator;
 
@@ -150,8 +150,9 @@ public class FeatureTableIndexUtils {
 
 			// Pick a projection different from the feature dao and project the
 			// bounding box
-			BoundingBox boundingBox = new BoundingBox(envelope.getMinX() - 1,
-					envelope.getMaxX() + 1, envelope.getMinY() - 1,
+			GeometryEnvelope boundingBox = new GeometryEnvelope(envelope.getMinX() - 1,
+					envelope.getMinY() - 1,
+					envelope.getMaxX() + 1, 
 					envelope.getMaxY() + 1);
 			Projection projection = null;
 			if (featureDao.getProjection().getEpsg() != ProjectionConstants.EPSG_WORLD_GEODETIC_SYSTEM) {
@@ -163,7 +164,7 @@ public class FeatureTableIndexUtils {
 			}
 			ProjectionTransform transform = featureDao.getProjection()
 					.getTransformation(projection);
-			BoundingBox transformedBoundingBox = transform
+			GeometryEnvelope transformedBoundingBox = transform
 					.transform(boundingBox);
 
 			// Test the query by projected bounding box
@@ -188,7 +189,7 @@ public class FeatureTableIndexUtils {
 			// Update a Geometry and update the index of a single feature row
 			geometryData = new GeoPackageGeometryData(featureDao
 					.getGeometryColumns().getSrsId());
-			Point point = new Point(5, 5);
+			Point point = new Point(new Position(5d, 5d));
 			geometryData.setGeometry(point);
 			testFeatureRow.setGeometry(geometryData);
 			TestCase.assertEquals(1, featureDao.update(testFeatureRow));

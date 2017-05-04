@@ -1,6 +1,6 @@
 package mil.nga.geopackage.tiles;
 
-import mil.nga.geopackage.BoundingBox;
+import mil.nga.sf.GeometryEnvelope;
 
 /**
  * Tile Bounding Box utility methods for the Java specific library
@@ -25,7 +25,7 @@ public class TileBoundingBoxJavaUtils {
 	 * @since 1.2.0
 	 */
 	public static ImageRectangle getRectangle(long width, long height,
-			BoundingBox boundingBox, BoundingBox boundingBoxSection) {
+			GeometryEnvelope boundingBox, GeometryEnvelope boundingBoxSection) {
 
 		ImageRectangleF rectF = getFloatRectangle(width, height, boundingBox,
 				boundingBoxSection);
@@ -52,7 +52,7 @@ public class TileBoundingBoxJavaUtils {
 	 * @since 1.2.0
 	 */
 	public static ImageRectangleF getRoundedFloatRectangle(long width,
-			long height, BoundingBox boundingBox, BoundingBox boundingBoxSection) {
+			long height, GeometryEnvelope boundingBox, GeometryEnvelope boundingBoxSection) {
 
 		ImageRectangle rect = getRectangle(width, height, boundingBox,
 				boundingBoxSection);
@@ -79,7 +79,7 @@ public class TileBoundingBoxJavaUtils {
 	 * @since 1.2.0
 	 */
 	public static ImageRectangleF getFloatRectangle(long width, long height,
-			BoundingBox boundingBox, BoundingBox boundingBoxSection) {
+			GeometryEnvelope boundingBox, GeometryEnvelope boundingBoxSection) {
 
 		float left = TileBoundingBoxUtils.getXPixel(width, boundingBox,
 				boundingBoxSection.getMinLongitude());

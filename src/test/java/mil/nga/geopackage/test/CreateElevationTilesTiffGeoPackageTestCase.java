@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 
 import junit.framework.TestCase;
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.GeoPackageException;
 import mil.nga.geopackage.core.srs.SpatialReferenceSystem;
@@ -17,13 +16,14 @@ import mil.nga.geopackage.extension.elevation.GriddedCoverageDataType;
 import mil.nga.geopackage.extension.elevation.GriddedTile;
 import mil.nga.geopackage.extension.elevation.GriddedTileDao;
 import mil.nga.geopackage.manager.GeoPackageManager;
-import mil.nga.geopackage.projection.ProjectionConstants;
 import mil.nga.geopackage.test.geom.GeoPackageGeometryDataUtils;
 import mil.nga.geopackage.tiles.matrix.TileMatrix;
 import mil.nga.geopackage.tiles.matrix.TileMatrixDao;
 import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
 import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.geopackage.tiles.user.TileRow;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.ProjectionConstants;
 
 import org.junit.After;
 
@@ -88,8 +88,10 @@ public abstract class CreateElevationTilesTiffGeoPackageTestCase extends
 				+ ((ProjectionConstants.WEB_MERCATOR_MAX_LAT_RANGE - minLatitude) * Math
 						.random());
 
-		BoundingBox bbox = new BoundingBox(minLongitude, maxLongitude,
-				minLatitude, maxLatitude);
+		GeometryEnvelope bbox = new GeometryEnvelope(minLongitude, 
+				minLatitude, 
+				maxLongitude,
+				maxLatitude);
 
 		SpatialReferenceSystemDao srsDao = geoPackage
 				.getSpatialReferenceSystemDao();

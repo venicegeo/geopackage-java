@@ -62,7 +62,7 @@ public class TileMatrixSetUtils {
 					TestCase.assertNotNull(result.getMaxX());
 					TestCase.assertNotNull(result.getMaxY());
 
-					SpatialReferenceSystem srs = result.getSrs();
+					mil.nga.sf.srs.SpatialReferenceSystem srs = result.getSrs();
 					TestCase.assertNotNull(srs);
 					TestCase.assertNotNull(srs.getSrsName());
 					TestCase.assertNotNull(srs.getSrsId());

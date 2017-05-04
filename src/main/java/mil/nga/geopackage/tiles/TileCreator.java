@@ -4,16 +4,16 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackageException;
-import mil.nga.geopackage.projection.Projection;
-import mil.nga.geopackage.projection.ProjectionFactory;
-import mil.nga.geopackage.projection.ProjectionTransform;
 import mil.nga.geopackage.tiles.matrix.TileMatrix;
 import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
 import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.geopackage.tiles.user.TileResultSet;
 import mil.nga.geopackage.tiles.user.TileRow;
+import mil.nga.sf.GeometryEnvelope;
+import mil.nga.sf.projection.Projection;
+import mil.nga.sf.projection.ProjectionFactory;
+import mil.nga.sf.projection.ProjectionTransform;
 
 import org.osgeo.proj4j.ProjCoordinate;
 
@@ -58,7 +58,7 @@ public class TileCreator {
 	/**
 	 * Tile Set bounding box
 	 */
-	private final BoundingBox tileSetBoundingBox;
+	private final GeometryEnvelope tileSetBoundingBox;
 
 	/**
 	 * Flag indicating the the tile and request projections are the same
@@ -199,7 +199,7 @@ public class TileCreator {
 	 * 
 	 * @return tile set bounding box
 	 */
-	public BoundingBox getTileSetBoundingBox() {
+	public GeometryEnvelope getTileSetBoundingBox() {
 		return tileSetBoundingBox;
 	}
 
@@ -228,14 +228,14 @@ public class TileCreator {
 	 *            request bounding box in the request projection
 	 * @return true if a tile exists
 	 */
-	public boolean hasTile(BoundingBox requestBoundingBox) {
+	public boolean hasTile(GeometryEnvelope requestBoundingBox) {
 
 		boolean hasTile = false;
 
 		// Transform to the projection of the tiles
 		ProjectionTransform transformRequestToTiles = requestProjection
 				.getTransformation(tilesProjection);
-		BoundingBox tilesBoundingBox = transformRequestToTiles
+		GeometryEnvelope tilesBoundingBox = transformRequestToTiles
 				.transform(requestBoundingBox);
 
 		TileMatrix tileMatrix = getTileMatrix(tilesBoundingBox);
@@ -261,14 +261,14 @@ public class TileCreator {
 	 *            request bounding box in the request projection
 	 * @return image
 	 */
-	public GeoPackageTile getTile(BoundingBox requestBoundingBox) {
+	public GeoPackageTile getTile(GeometryEnvelope requestBoundingBox) {
 
 		GeoPackageTile tile = null;
 
 		// Transform to the projection of the tiles
 		ProjectionTransform transformRequestToTiles = requestProjection
 				.getTransformation(tilesProjection);
-		BoundingBox tilesBoundingBox = transformRequestToTiles
+		GeometryEnvelope tilesBoundingBox = transformRequestToTiles
 				.transform(requestBoundingBox);
 
 		TileMatrix tileMatrix = getTileMatrix(tilesBoundingBox);
@@ -281,7 +281,7 @@ public class TileCreator {
 
 				if (tileResults.getCount() > 0) {
 
-					BoundingBox requestProjectedBoundingBox = transformRequestToTiles
+					GeometryEnvelope requestProjectedBoundingBox = transformRequestToTiles
 							.transform(requestBoundingBox);
 
 					// Determine the requested tile dimensions, or use the
@@ -351,7 +351,7 @@ public class TileCreator {
 	 * @return tile bitmap
 	 */
 	private GeoPackageTile drawTile(TileMatrix tileMatrix,
-			TileResultSet tileResults, BoundingBox requestProjectedBoundingBox,
+			TileResultSet tileResults, GeometryEnvelope requestProjectedBoundingBox,
 			int tileWidth, int tileHeight) {
 
 		// Draw the resulting bitmap with the matching tiles
@@ -370,13 +370,13 @@ public class TileCreator {
 			}
 
 			// Get the bounding box of the tile
-			BoundingBox tileBoundingBox = TileBoundingBoxUtils.getBoundingBox(
+			GeometryEnvelope tileBoundingBox = TileBoundingBoxUtils.getBoundingBox(
 					tileSetBoundingBox, tileMatrix, tileRow.getTileColumn(),
 					tileRow.getTileRow());
 
 			// Get the bounding box where the requested image and
 			// tile overlap
-			BoundingBox overlap = TileBoundingBoxUtils.overlap(
+			GeometryEnvelope overlap = GeometryEnvelope.overlap(
 					requestProjectedBoundingBox, tileBoundingBox);
 
 			// If the tile overlaps with the requested box
@@ -456,9 +456,9 @@ public class TileCreator {
 	 */
 	private BufferedImage reprojectTile(BufferedImage tile,
 			int requestedTileWidth, int requestedTileHeight,
-			BoundingBox requestBoundingBox,
+			GeometryEnvelope requestBoundingBox,
 			ProjectionTransform transformRequestToTiles,
-			BoundingBox tilesBoundingBox) {
+			GeometryEnvelope tilesBoundingBox) {
 
 		final double requestedWidthUnitsPerPixel = (requestBoundingBox
 				.getMaxLongitude() - requestBoundingBox.getMinLongitude())
@@ -534,12 +534,12 @@ public class TileCreator {
 	 *            bounding box projected to the tiles
 	 * @return tile matrix or null
 	 */
-	private TileMatrix getTileMatrix(BoundingBox projectedRequestBoundingBox) {
+	private TileMatrix getTileMatrix(GeometryEnvelope projectedRequestBoundingBox) {
 
 		TileMatrix tileMatrix = null;
 
 		// Check if the request overlaps the tile matrix set
-		if (TileBoundingBoxUtils.overlap(projectedRequestBoundingBox,
+		if (GeometryEnvelope.overlap(projectedRequestBoundingBox,
 				tileSetBoundingBox) != null) {
 
 			// Get the tile distance
@@ -573,7 +573,7 @@ public class TileCreator {
 	 * @return tile cursor results or null
 	 */
 	private TileResultSet retrieveTileResults(
-			BoundingBox projectedRequestBoundingBox, TileMatrix tileMatrix) {
+			GeometryEnvelope projectedRequestBoundingBox, TileMatrix tileMatrix) {
 
 		TileResultSet tileResults = null;
 
