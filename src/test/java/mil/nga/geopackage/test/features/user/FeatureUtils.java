@@ -350,11 +350,13 @@ public class FeatureUtils {
 			Polygon polygon = (Polygon) geometry;
 			validatePolygon(polygon, polygon);
 			break;
-		case MULTIPOINT:
+		case MULTIPOINT: 
+		{
 			TestCase.assertTrue(geometry instanceof MultiPoint);
 			MultiPoint multiPoint = (MultiPoint) geometry;
 			validateMultiPoint(multiPoint, multiPoint);
 			break;
+		}
 		case MULTILINESTRING:
 			TestCase.assertTrue(geometry instanceof MultiLineString);
 			MultiLineString multiLineString = (MultiLineString) geometry;
@@ -366,9 +368,15 @@ public class FeatureUtils {
 			validateMultiPolygon(multiPolygon, multiPolygon);
 			break;
 		case GEOMETRYCOLLECTION:
-			TestCase.assertTrue(geometry instanceof GeometryCollection);
-			GeometryCollection<?> geometryCollection = (GeometryCollection<?>) geometry;
-			validateGeometryCollection(geometryCollection, geometryCollection);
+			if (geometry instanceof GeometryCollection) {
+				GeometryCollection<?> geometryCollection = (GeometryCollection<?>) geometry;
+				validateGeometryCollection(geometryCollection, geometryCollection);
+			} else if (geometry instanceof MultiPoint) {
+				MultiPoint multiPoint = (MultiPoint) geometry;
+				validateMultiPoint(multiPoint, multiPoint);
+			} else {
+				TestCase.fail();
+			}
 			break;
 		default:
 
