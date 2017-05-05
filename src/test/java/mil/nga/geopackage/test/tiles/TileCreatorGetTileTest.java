@@ -57,7 +57,7 @@ public class TileCreatorGetTileTest extends TilesGeoPackageTestCase {
 		TileCreator tileCreator = new TileCreator(tileDao, width, height,
 				wgs84, "png");
 
-		GeometryEnvelope boundingBox = new GeometryEnvelope(-180d, -90d, 180, 90);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-180d, -90d, 180d, 90d);
 		boundingBox = TileBoundingBoxUtils
 				.boundWgs84BoundingBoxWithWebMercatorLimits(boundingBox);
 		TestCase.assertFalse(tileCreator.hasTile(boundingBox));
@@ -117,7 +117,7 @@ public class TileCreatorGetTileTest extends TilesGeoPackageTestCase {
 		int height = 256;
 		TileCreator tileCreator = new TileCreator(tileDao);
 
-		GeometryEnvelope boundingBox = new GeometryEnvelope(-180d, -90d, 180, 90);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-180d, -90d, 180d, 90d);
 		boundingBox = TileBoundingBoxUtils
 				.boundWgs84BoundingBoxWithWebMercatorLimits(boundingBox);
 		TestCase.assertFalse(tileCreator.hasTile(boundingBox));

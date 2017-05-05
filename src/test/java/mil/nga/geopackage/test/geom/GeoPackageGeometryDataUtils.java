@@ -235,7 +235,7 @@ public class GeoPackageGeometryDataUtils {
 		TestCase.assertEquals(expected.isEmpty(), actual.isEmpty());
 		TestCase.assertEquals(expected.getByteOrder(), actual.getByteOrder());
 		TestCase.assertEquals(expected.getSrsId(), actual.getSrsId());
-		compareEnvelopes(expected.getEnvelope(), actual.getEnvelope());
+		TestCase.assertEquals(expected.getEnvelope(), actual.getEnvelope());
 		TestCase.assertEquals(expected.getWkbGeometryIndex(),
 				actual.getWkbGeometryIndex());
 
@@ -250,37 +250,6 @@ public class GeoPackageGeometryDataUtils {
 
 		// Compare all bytes
 		compareByteArrays(expected.getBytes(), actual.getBytes());
-
-	}
-
-	/**
-	 * Compare two geometry envelopes and verify they are equal
-	 * 
-	 * @param expected
-	 * @param actual
-	 */
-	private static void compareEnvelopes(GeometryEnvelope expected,
-			GeometryEnvelope actual) {
-
-		if (expected == null) {
-			TestCase.assertNull(actual);
-		} else {
-			TestCase.assertNotNull(actual);
-
-			TestCase.assertEquals(
-					GeoPackageGeometryData.getIndicator(expected),
-					GeoPackageGeometryData.getIndicator(actual));
-			TestCase.assertEquals(expected.getMinX(), actual.getMinX());
-			TestCase.assertEquals(expected.getMaxX(), actual.getMaxX());
-			TestCase.assertEquals(expected.getMinY(), actual.getMinY());
-			TestCase.assertEquals(expected.getMaxY(), actual.getMaxY());
-			TestCase.assertEquals(expected.hasZ(), actual.hasZ());
-			TestCase.assertEquals(expected.getMinZ(), actual.getMinZ());
-			TestCase.assertEquals(expected.getMaxZ(), actual.getMaxZ());
-			TestCase.assertEquals(expected.hasM(), actual.hasM());
-			TestCase.assertEquals(expected.getMinM(), actual.getMinM());
-			TestCase.assertEquals(expected.getMaxM(), actual.getMaxM());
-		}
 
 	}
 

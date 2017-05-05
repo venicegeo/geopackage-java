@@ -44,7 +44,7 @@ public class GeoPackageTestUtils {
 		geometryColumns.setZ((byte) 1);
 		geometryColumns.setM((byte) 0);
 
-		GeometryEnvelope boundingBox = new GeometryEnvelope(-90, 90, 45, 45);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-90d, 90d, 45d, 45d);
 
 		SpatialReferenceSystem srs = geoPackage.getSpatialReferenceSystemDao()
 				.createWebMercator();
@@ -70,7 +70,7 @@ public class GeoPackageTestUtils {
 		geometryColumns.setZ((byte) 1);
 		geometryColumns.setM((byte) 0);
 
-		GeometryEnvelope boundingBox = new GeometryEnvelope(-90, 45, 90, 45);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-90d, 45d, 90d, 45d);
 
 		SpatialReferenceSystem srs = geoPackage.getSpatialReferenceSystemDao()
 				.createWebMercator();
@@ -97,7 +97,7 @@ public class GeoPackageTestUtils {
 		geometryColumns.setZ((byte) 1);
 		geometryColumns.setM((byte) 0);
 
-		GeometryEnvelope boundingBox = new GeometryEnvelope(-90, 45, 90, 45);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-90d, 45d, 90d, 45d);
 
 		List<FeatureColumn> additionalColumns = getFeatureColumns();
 
@@ -126,7 +126,7 @@ public class GeoPackageTestUtils {
 		geometryColumns.setZ((byte) 1);
 		geometryColumns.setM((byte) 0);
 
-		GeometryEnvelope boundingBox = new GeometryEnvelope(-90, 45, 90, 45);
+		GeometryEnvelope boundingBox = new GeometryEnvelope(-90d, 45d, 90d, 45d);
 
 		List<FeatureColumn> additionalColumns = getFeatureColumns();
 
