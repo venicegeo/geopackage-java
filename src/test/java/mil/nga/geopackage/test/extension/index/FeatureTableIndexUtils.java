@@ -28,7 +28,6 @@ import mil.nga.geopackage.test.io.TestGeoPackageProgress;
 import mil.nga.sf.Geometry;
 import mil.nga.sf.GeometryEnvelope;
 import mil.nga.sf.Point;
-import mil.nga.sf.Position;
 import mil.nga.sf.util.GeometryEnvelopeBuilder;
 
 import com.j256.ormlite.dao.CloseableIterator;
@@ -189,7 +188,7 @@ public class FeatureTableIndexUtils {
 			// Update a Geometry and update the index of a single feature row
 			geometryData = new GeoPackageGeometryData(featureDao
 					.getGeometryColumns().getSrsId());
-			Point point = new Point(new Position(5d, 5d));
+			Point point = new Point(5d, 5d);
 			geometryData.setGeometry(point);
 			testFeatureRow.setGeometry(geometryData);
 			TestCase.assertEquals(1, featureDao.update(testFeatureRow));
@@ -367,9 +366,9 @@ public class FeatureTableIndexUtils {
 		GeoPackageGeometryData geometryData = featureRow.getGeometry();
 		GeometryEnvelope envelope = geometryData.getEnvelope();
 		if (envelope == null) {
-			Geometry geometry = geometryData.getGeometry();
-			if (geometry != null) {
-				envelope = GeometryEnvelopeBuilder.buildEnvelope(geometry);
+			Geometry simpleGeometry = geometryData.getGeometry();
+			if (simpleGeometry != null) {
+				envelope = GeometryEnvelopeBuilder.buildEnvelope(simpleGeometry);
 			}
 		}
 

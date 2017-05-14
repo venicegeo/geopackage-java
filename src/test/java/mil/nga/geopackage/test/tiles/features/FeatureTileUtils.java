@@ -25,7 +25,6 @@ import mil.nga.sf.LineString;
 import mil.nga.sf.LinearRing;
 import mil.nga.sf.Point;
 import mil.nga.sf.Polygon;
-import mil.nga.sf.Position;
 
 /**
  * Feature Tile Utils
@@ -194,7 +193,7 @@ public class FeatureTileUtils {
 	public static void setPoint(FeatureRow featureRow, double x, double y) {
 		GeoPackageGeometryData geomData = new GeoPackageGeometryData(
 				ProjectionConstants.EPSG_WORLD_GEODETIC_SYSTEM);
-		Point point = new Point(new Position(x, y));
+		Point point = new Point(x, y);
 		geomData.setGeometry(point);
 		featureRow.setGeometry(geomData);
 	}
@@ -212,8 +211,8 @@ public class FeatureTileUtils {
 	private static LineString getLineString(double[][] points) {
 		LineString lineString = new LineString(false, false);
 		for (int i = 0; i < points.length; i++) {
-			Position position = new Position(points[i][0], points[i][1]);
-			lineString.addPosition(position);
+			Point point = new Point(points[i][0], points[i][1]);
+			lineString.addPoint(point);
 		}
 		return lineString;
 	}

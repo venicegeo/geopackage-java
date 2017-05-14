@@ -198,17 +198,17 @@ public class TestUtils {
 
 					if (column.isGeometry()) {
 
-						Geometry geometry = null;
+						Geometry simpleGeometry = null;
 
 						switch (column.getGeometryType()) {
 						case POINT:
-							geometry = createPoint(hasZ, hasM);
+							simpleGeometry = createPoint(hasZ, hasM);
 							break;
 						case LINESTRING:
-							geometry = createLineString(hasZ, hasM);
+							simpleGeometry = createLineString(hasZ, hasM);
 							break;
 						case POLYGON:
-							geometry = createPolygon(hasZ, hasM);
+							simpleGeometry = createPolygon(hasZ, hasM);
 							break;
 						default:
 							throw new UnsupportedOperationException(
@@ -218,7 +218,7 @@ public class TestUtils {
 
 						GeoPackageGeometryData geometryData = new GeoPackageGeometryData(
 								geometryColumns.getSrsId());
-						geometryData.setGeometry(geometry);
+						geometryData.setGeometry(simpleGeometry);
 
 						newRow.setGeometry(geometryData);
 
@@ -321,7 +321,7 @@ public class TestUtils {
 		Double z = hasZ ? Math.random() * 1000.0 : null;
 		Double m = hasM ? Math.random() * 1000.0 : null;
 
-		return new Position(x, y, z, m);
+		return new Point(x, y, z, m);
 	}
 
 	/**
@@ -350,7 +350,7 @@ public class TestUtils {
 		int numPoints = 2 + ((int) (Math.random() * 9));
 
 		for (int i = 0; i < numPoints; i++) {
-			lineString.addPosition(createPosition(hasZ, hasM));
+			lineString.addPoint(createPoint(hasZ, hasM));
 		}
 
 		return lineString;

@@ -17,10 +17,12 @@ import mil.nga.geopackage.geom.GeoPackageGeometryData;
 import mil.nga.geopackage.tiles.TileBoundingBoxUtils;
 import mil.nga.sf.CircularString;
 import mil.nga.sf.CompoundCurve;
+import mil.nga.sf.Curve;
 import mil.nga.sf.Geometry;
-import mil.nga.sf.GeometryCollection;
+import mil.nga.sf.SimpleGeometryCollection;
 import mil.nga.sf.GeometryEnvelope;
 import mil.nga.sf.LineString;
+import mil.nga.sf.LinearRing;
 import mil.nga.sf.MultiLineString;
 import mil.nga.sf.MultiPoint;
 import mil.nga.sf.MultiPolygon;
@@ -142,8 +144,8 @@ public class DefaultFeatureTiles extends FeatureTiles {
 			ProjectionTransform transform, Graphics2D graphics, FeatureRow row) {
 		GeoPackageGeometryData geomData = row.getGeometry();
 		if (geomData != null) {
-			Geometry geometry = geomData.getGeometry();
-			drawGeometry(boundingBox, transform, graphics, geometry);
+			Geometry simpleGeometry = geomData.getGeometry();
+			drawGeometry(boundingBox, transform, graphics, simpleGeometry);
 		}
 	}
 
@@ -162,12 +164,12 @@ public class DefaultFeatureTiles extends FeatureTiles {
 		switch (geometry.getGeometryType()) {
 
 		case POINT:
-			Point point = (Point) geometry;
-			drawPoint(boundingBox, transform, graphics, point);
+			Point simplePoint = (Point) geometry;
+			drawPoint(boundingBox, transform, graphics, simplePoint);
 			break;
 		case LINESTRING:
 			LineString lineString = (LineString) geometry;
-			drawLineString(boundingBox, transform, graphics, lineString);
+			drawCurve(boundingBox, transform, graphics, lineString);
 			break;
 		case POLYGON:
 			Polygon polygon = (Polygon) geometry;
@@ -175,30 +177,30 @@ public class DefaultFeatureTiles extends FeatureTiles {
 			break;
 		case MULTIPOINT:
 			MultiPoint multiPoint = (MultiPoint) geometry;
-			for (Position p : multiPoint.getPositions()) {
-				drawPosition(boundingBox, transform, graphics, p);
+			for (Point p : multiPoint.getGeometries()) {
+				drawPoint(boundingBox, transform, graphics, p);
 			}
 			break;
 		case MULTILINESTRING:
 			MultiLineString multiLineString = (MultiLineString) geometry;
-			for (LineString ls : multiLineString.getLineStrings()) {
-				drawLineString(boundingBox, transform, graphics, ls);
+			for (LineString ls : multiLineString.getGeometries()) {
+				drawCurve(boundingBox, transform, graphics, ls);
 			}
 			break;
 		case MULTIPOLYGON:
 			MultiPolygon multiPolygon = (MultiPolygon) geometry;
-			for (Polygon p : multiPolygon.getPolygons()) {
+			for (Polygon p : multiPolygon.getGeometries()) {
 				drawPolygon(boundingBox, transform, graphics, p);
 			}
 			break;
 		case CIRCULARSTRING:
 			CircularString circularString = (CircularString) geometry;
-			drawLineString(boundingBox, transform, graphics, circularString);
+			drawCurve(boundingBox, transform, graphics, circularString);
 			break;
 		case COMPOUNDCURVE:
 			CompoundCurve compoundCurve = (CompoundCurve) geometry;
-			for (LineString ls : compoundCurve.getLineStrings()) {
-				drawLineString(boundingBox, transform, graphics, ls);
+			for (Curve ls : compoundCurve.getCurves()) {
+				drawCurve(boundingBox, transform, graphics, ls);
 			}
 			break;
 		case POLYHEDRALSURFACE:
@@ -218,8 +220,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 			drawPolygon(boundingBox, transform, graphics, triangle);
 			break;
 		case GEOMETRYCOLLECTION:
-			@SuppressWarnings("unchecked")
-			GeometryCollection<Geometry> geometryCollection = (GeometryCollection<Geometry>) geometry;
+			SimpleGeometryCollection geometryCollection = (SimpleGeometryCollection) geometry;
 			for (Geometry g : geometryCollection.getGeometries()) {
 				drawGeometry(boundingBox, transform, graphics, g);
 			}
@@ -237,12 +238,12 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * @param boundingBox
 	 * @param transform
 	 * @param graphics
-	 * @param lineString
+	 * @param curve
 	 */
-	private void drawLineString(GeometryEnvelope boundingBox,
+	private void drawCurve(GeometryEnvelope boundingBox,
 			ProjectionTransform transform, Graphics2D graphics,
-			LineString lineString) {
-		Path2D path = getPath(boundingBox, transform, lineString);
+			Curve curve) {
+		Path2D path = getPath(boundingBox, transform, curve);
 		drawLine(graphics, path);
 	}
 
@@ -265,14 +266,14 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 *
 	 * @param boundingBox
 	 * @param transform
-	 * @param lineString
+	 * @param curve
 	 */
 	private Path2D getPath(GeometryEnvelope boundingBox,
-			ProjectionTransform transform, LineString lineString) {
+			ProjectionTransform transform, Curve curve) {
 
 		Path2D path = null;
 
-		for (Position position : lineString.getPositions()) {
+		for (Position position : curve.getPoints()) {
 
 			Position projectedPosition = transform.transform(position);
 
@@ -317,7 +318,7 @@ public class DefaultFeatureTiles extends FeatureTiles {
 
 		Area area = null;
 
-		for (LineString ring : polygon.getRings()) {
+		for (LinearRing ring : polygon.getRings()) {
 
 			Path2D path = getPath(boundingBox, transform, ring);
 			Area ringArea = new Area(path);
@@ -359,12 +360,12 @@ public class DefaultFeatureTiles extends FeatureTiles {
 	 * @param boundingBox
 	 * @param transform
 	 * @param graphics
-	 * @param point
+	 * @param simplePoint
 	 */
 	private void drawPoint(GeometryEnvelope boundingBox,
-			ProjectionTransform transform, Graphics2D graphics, Point point) {
+			ProjectionTransform transform, Graphics2D graphics, Point simplePoint) {
 
-		drawPosition(boundingBox, transform, graphics, point.getPosition());
+		drawPosition(boundingBox, transform, graphics, simplePoint);
 	}
 	/**
 	 * Draw the position
