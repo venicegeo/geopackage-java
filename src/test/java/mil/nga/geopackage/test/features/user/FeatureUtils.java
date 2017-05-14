@@ -360,15 +360,19 @@ public class FeatureUtils {
 			break;
 		}
 		case MULTILINESTRING:
+		{	
 			TestCase.assertTrue(geometry instanceof MultiLineString);
 			MultiLineString multiLineString = (MultiLineString) geometry;
 			validateMultiLineString(multiLineString, multiLineString);
 			break;
+		}
 		case MULTIPOLYGON:
+		{
 			TestCase.assertTrue(geometry instanceof MultiPolygon);
 			MultiPolygon multiPolygon = (MultiPolygon) geometry;
 			validateMultiPolygon(multiPolygon, multiPolygon);
 			break;
+		}
 		case GEOMETRYCOLLECTION:
 			if (geometry instanceof SimpleGeometryCollection) {
 				SimpleGeometryCollection geometryCollection = (SimpleGeometryCollection) geometry;
@@ -376,6 +380,12 @@ public class FeatureUtils {
 			} else if (geometry instanceof MultiPoint) {
 				MultiPoint multiPoint = (MultiPoint) geometry;
 				validateMultiPoint(multiPoint, multiPoint);
+			} else if (geometry instanceof MultiLineString) {
+				MultiLineString multiLineString = (MultiLineString) geometry;
+				validateMultiLineString(multiLineString, multiLineString);
+			} else if (geometry instanceof MultiPolygon) {
+				MultiPolygon multiPolygon = (MultiPolygon) geometry;
+				validateMultiPolygon(multiPolygon, multiPolygon);
 			} else {
 				TestCase.fail();
 			}
