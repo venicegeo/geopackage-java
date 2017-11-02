@@ -6,6 +6,8 @@ import mil.nga.geopackage.attributes.AttributesDao;
 import mil.nga.geopackage.core.contents.Contents;
 import mil.nga.geopackage.features.columns.GeometryColumns;
 import mil.nga.geopackage.features.user.FeatureDao;
+import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
+import mil.nga.geopackage.tiles.user.TileDao;
 
 /**
  * GeoPackage database connection
@@ -40,6 +42,33 @@ public interface GeoPackage extends GeoPackageCore {
 	 * @return feature dao
 	 */
 	public FeatureDao getFeatureDao(String tableName);
+
+	/**
+	 * Get a Tile DAO from Tile Matrix Set
+	 *
+	 * @param tileMatrixSet
+	 *            tile matrix set
+	 * @return tile dao
+	 */
+	public TileDao getTileDao(TileMatrixSet tileMatrixSet);
+
+	/**
+	 * Get a Tile DAO from Contents
+	 *
+	 * @param contents
+	 *            contents
+	 * @return tile dao
+	 */
+	public TileDao getTileDao(Contents contents);
+
+	/**
+	 * Get a Tile DAO from a table name
+	 *
+	 * @param tableName
+	 *            table name
+	 * @return tile dao
+	 */
+	public TileDao getTileDao(String tableName);
 
 	/**
 	 * Get an Attributes DAO from Contents

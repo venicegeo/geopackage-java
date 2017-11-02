@@ -6,13 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.j256.ormlite.stmt.DeleteBuilder;
-import com.j256.ormlite.stmt.PreparedDelete;
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.PreparedUpdate;
-import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.UpdateBuilder;
-
 import junit.framework.TestCase;
 import mil.nga.geopackage.GeoPackage;
 import mil.nga.geopackage.core.contents.Contents;
@@ -26,8 +19,17 @@ import mil.nga.geopackage.schema.columns.DataColumnsDao;
 import mil.nga.geopackage.schema.constraints.DataColumnConstraintType;
 import mil.nga.geopackage.schema.constraints.DataColumnConstraints;
 import mil.nga.geopackage.schema.constraints.DataColumnConstraintsDao;
+import mil.nga.geopackage.test.TestConstants;
 import mil.nga.geopackage.test.TestUtils;
+import mil.nga.geopackage.tiles.user.TileTable;
 import mil.nga.sf.GeometryType;
+
+import com.j256.ormlite.stmt.DeleteBuilder;
+import com.j256.ormlite.stmt.PreparedDelete;
+import com.j256.ormlite.stmt.PreparedQuery;
+import com.j256.ormlite.stmt.PreparedUpdate;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.UpdateBuilder;
 
 /**
  * Tile Data Columns Utility test methods
@@ -238,6 +240,9 @@ public class DataColumnsUtils {
 
 		if (dao.isTableExists()) {
 
+			// Get current count
+			long count = dao.countOf();
+
 			// Retrieve a random srs
 			List<SpatialReferenceSystem> results = srsDao.queryForAll();
 			SpatialReferenceSystem srs = null;
@@ -245,6 +250,61 @@ public class DataColumnsUtils {
 				int random = (int) (Math.random() * results.size());
 				srs = results.get(random);
 			}
+
+			// Create a new contents
+			Contents tileContents = new Contents();
+			tileContents.setTableName("tile_contents");
+			tileContents.setDataType(ContentsDataType.TILES);
+			tileContents.setIdentifier("tile_contents");
+			tileContents.setDescription("");
+			tileContents.setLastChange(new Date());
+			tileContents.setMinX(-180.0);
+			tileContents.setMinY(-90.0);
+			tileContents.setMaxX(180.0);
+			tileContents.setMaxY(90.0);
+			tileContents.setSrs(srs);
+
+			// Create the user tile table
+			geoPackage.createTileTable(TestUtils.buildTileTable(tileContents
+					.getTableName()));
+
+			contentsDao.create(tileContents);
+
+			// Create new data column
+			String columnName = TileTable.COLUMN_TILE_DATA;
+			String name = columnName + " NAME";
+			String title = columnName + " TITLE";
+			String description = columnName + " DESCRIPTION";
+			String mimeType = "image/" + TestConstants.TILE_FILE_NAME_EXTENSION;
+
+			DataColumns dataColumns = new DataColumns();
+			dataColumns.setContents(tileContents);
+			dataColumns.setColumnName(columnName);
+			dataColumns.setName(name);
+			dataColumns.setTitle(title);
+			dataColumns.setDescription(description);
+			dataColumns.setMimeType(mimeType);
+			dao.create(dataColumns);
+
+			// Verify count
+			long newCount = dao.countOf();
+			TestCase.assertEquals(count + 1, newCount);
+
+			// Verify saved data contents
+			DataColumns queryDataColumns = dao.queryForId(dataColumns.getId());
+			TestCase.assertEquals(tileContents.getId(),
+					queryDataColumns.getTableName());
+			TestCase.assertEquals(columnName, queryDataColumns.getColumnName());
+			TestCase.assertEquals(name, queryDataColumns.getName());
+			TestCase.assertEquals(title, queryDataColumns.getTitle());
+			TestCase.assertEquals(description,
+					queryDataColumns.getDescription());
+			TestCase.assertEquals(mimeType, queryDataColumns.getMimeType());
+			TestCase.assertEquals(tileContents.getId(), queryDataColumns
+					.getContents().getId());
+
+			// Get current count
+			count = dao.countOf();
 
 			// Create a new contents
 			Contents featureContents = new Contents();
@@ -279,6 +339,48 @@ public class DataColumnsUtils {
 			sampleEnum2.setConstraintType(DataColumnConstraintType.ENUM);
 			sampleEnum2.setValue("TWO");
 			dataColumnConstraintsDao.create(sampleEnum2);
+
+			// Create new data column
+			columnName = TestUtils.TEST_INTEGER_COLUMN;
+			name = columnName + " NAME";
+			title = columnName + " TITLE";
+			description = columnName + " DESCRIPTION";
+
+			dataColumns = new DataColumns();
+			dataColumns.setContents(tileContents);
+			dataColumns.setColumnName(columnName);
+			dataColumns.setName(name);
+			dataColumns.setTitle(title);
+			dataColumns.setDescription(description);
+			dataColumns.setConstraint(dataColumnConstraintsDao
+					.queryByConstraintName(constraintName).get(0));
+			dao.create(dataColumns);
+
+			// Verify count
+			newCount = dao.countOf();
+			TestCase.assertEquals(count + 1, newCount);
+
+			// Verify saved matrix tile
+			queryDataColumns = dao.queryForId(dataColumns.getId());
+			TestCase.assertEquals(tileContents.getId(),
+					queryDataColumns.getTableName());
+			TestCase.assertEquals(columnName, queryDataColumns.getColumnName());
+			TestCase.assertEquals(name, queryDataColumns.getName());
+			TestCase.assertEquals(title, queryDataColumns.getTitle());
+			TestCase.assertEquals(description,
+					queryDataColumns.getDescription());
+			TestCase.assertNull(queryDataColumns.getMimeType());
+			TestCase.assertEquals(tileContents.getId(), queryDataColumns
+					.getContents().getId());
+			List<DataColumnConstraints> constraints = queryDataColumns
+					.getConstraints(dataColumnConstraintsDao);
+			TestCase.assertTrue(constraints.size() > 1);
+			for (DataColumnConstraints constraint : constraints) {
+				TestCase.assertEquals(constraintName,
+						constraint.getConstraintName());
+				TestCase.assertEquals(DataColumnConstraintType.ENUM,
+						constraint.getConstraintType());
+			}
 		}
 	}
 
