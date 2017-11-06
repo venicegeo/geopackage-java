@@ -23,18 +23,6 @@ import mil.nga.geopackage.features.user.FeatureConnection;
 import mil.nga.geopackage.features.user.FeatureDao;
 import mil.nga.geopackage.features.user.FeatureTable;
 import mil.nga.geopackage.features.user.FeatureTableReader;
-import mil.nga.geopackage.tiles.matrix.TileMatrix;
-import mil.nga.geopackage.tiles.matrix.TileMatrixDao;
-import mil.nga.geopackage.tiles.matrix.TileMatrixKey;
-import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
-import mil.nga.geopackage.tiles.matrixset.TileMatrixSetDao;
-import mil.nga.geopackage.tiles.user.TileConnection;
-import mil.nga.geopackage.tiles.user.TileDao;
-import mil.nga.geopackage.tiles.user.TileTable;
-import mil.nga.geopackage.tiles.user.TileTableReader;
-
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
 
 /**
  * GeoPackage implementation
@@ -153,115 +141,6 @@ class GeoPackageImpl extends GeoPackageCoreImpl implements GeoPackage {
 					+ geometryColumnsList.size());
 		}
 		return getFeatureDao(geometryColumnsList.get(0));
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public TileDao getTileDao(TileMatrixSet tileMatrixSet) {
-
-		if (tileMatrixSet == null) {
-			throw new GeoPackageException("Non null "
-					+ TileMatrixSet.class.getSimpleName()
-					+ " is required to create " + TileDao.class.getSimpleName());
-		}
-
-		// Get the Tile Matrix collection, order by zoom level ascending & pixel
-		// size descending per requirement 51
-		List<TileMatrix> tileMatrices;
-		try {
-			TileMatrixDao tileMatrixDao = getTileMatrixDao();
-			QueryBuilder<TileMatrix, TileMatrixKey> qb = tileMatrixDao
-					.queryBuilder();
-			qb.where().eq(TileMatrix.COLUMN_TABLE_NAME,
-					tileMatrixSet.getTableName());
-			qb.orderBy(TileMatrix.COLUMN_ZOOM_LEVEL, true);
-			qb.orderBy(TileMatrix.COLUMN_PIXEL_X_SIZE, false);
-			qb.orderBy(TileMatrix.COLUMN_PIXEL_Y_SIZE, false);
-			PreparedQuery<TileMatrix> query = qb.prepare();
-			tileMatrices = tileMatrixDao.query(query);
-		} catch (SQLException e) {
-			throw new GeoPackageException("Failed to retrieve "
-					+ TileDao.class.getSimpleName() + " for table name: "
-					+ tileMatrixSet.getTableName() + ". Exception retrieving "
-					+ TileMatrix.class.getSimpleName() + " collection.", e);
-		}
-
-		// Read the existing table and create the dao
-		TileTableReader tableReader = new TileTableReader(
-				tileMatrixSet.getTableName());
-		TileConnection userDb = new TileConnection(database);
-		final TileTable tileTable = tableReader.readTable(userDb);
-		userDb.setTable(tileTable);
-		TileDao dao = new TileDao(getName(), database, userDb, tileMatrixSet,
-				tileMatrices, tileTable);
-
-		return dao;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public TileDao getTileDao(Contents contents) {
-
-		if (contents == null) {
-			throw new GeoPackageException("Non null "
-					+ Contents.class.getSimpleName()
-					+ " is required to create " + TileDao.class.getSimpleName());
-		}
-
-		TileMatrixSet tileMatrixSet = null;
-		try {
-			tileMatrixSet = getTileMatrixSetDao().queryForId(
-					contents.getTableName());
-		} catch (SQLException e) {
-			throw new GeoPackageException("No "
-					+ TileMatrixSet.class.getSimpleName()
-					+ " could be retrieved for "
-					+ Contents.class.getSimpleName() + " " + contents.getId());
-		}
-
-		if (tileMatrixSet == null) {
-			throw new GeoPackageException("No "
-					+ TileMatrixSet.class.getSimpleName() + " exists for "
-					+ Contents.class.getSimpleName() + " " + contents.getId());
-		}
-
-		return getTileDao(tileMatrixSet);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public TileDao getTileDao(String tableName) {
-
-		TileMatrixSetDao dao = getTileMatrixSetDao();
-		List<TileMatrixSet> tileMatrixSetList;
-		try {
-			tileMatrixSetList = dao.queryForEq(TileMatrixSet.COLUMN_TABLE_NAME,
-					tableName);
-		} catch (SQLException e) {
-			throw new GeoPackageException("Failed to retrieve "
-					+ TileDao.class.getSimpleName() + " for table name: "
-					+ tableName + ". Exception retrieving "
-					+ TileMatrixSet.class.getSimpleName() + ".", e);
-		}
-		if (tileMatrixSetList.isEmpty()) {
-			throw new GeoPackageException(
-					"No Tile Table exists for table name: " + tableName
-							+ ", Tile Tables: " + getTileTables());
-		} else if (tileMatrixSetList.size() > 1) {
-			// This shouldn't happen with the table name primary key on tile
-			// matrix set table
-			throw new GeoPackageException("Unexpected state. More than one "
-					+ TileMatrixSet.class.getSimpleName()
-					+ " matched for table name: " + tableName + ", count: "
-					+ tileMatrixSetList.size());
-		}
-		return getTileDao(tileMatrixSetList.get(0));
 	}
 
 	/**

@@ -40,11 +40,6 @@ import mil.nga.geopackage.metadata.MetadataScopeType;
 import mil.nga.geopackage.metadata.reference.MetadataReference;
 import mil.nga.geopackage.metadata.reference.MetadataReferenceDao;
 import mil.nga.geopackage.metadata.reference.ReferenceScopeType;
-import mil.nga.geopackage.tiles.matrix.TileMatrix;
-import mil.nga.geopackage.tiles.matrix.TileMatrixDao;
-import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
-import mil.nga.geopackage.tiles.matrixset.TileMatrixSetDao;
-import mil.nga.geopackage.tiles.user.TileTable;
 import mil.nga.sf.GeometryType;
 
 /**
@@ -57,7 +52,7 @@ public class TestSetupTeardown {
 
 	public static final int CREATE_SRS_COUNT = 3;
 
-	public static final int CREATE_CONTENTS_COUNT = 6;
+	public static final int CREATE_CONTENTS_COUNT = 5;
 
 	public static final int CREATE_GEOMETRY_COLUMNS_COUNT = 4;
 
@@ -129,10 +124,6 @@ public class TestSetupTeardown {
 		
 		if (features) {
 			setUpCreateFeatures(geoPackage, allowEmptyFeatures);
-		}
-
-		if (tiles) {
-			setUpCreateTiles(geoPackage);
 		}
 
 		setUpCreateCommon(geoPackage);
@@ -497,96 +488,6 @@ public class TestSetupTeardown {
 		TestUtils.addRowsToFeatureTable(geoPackage,
 				lineString3dMGeometryColumns, lineString3dMTable, 3, true,
 				true, allowEmptyFeatures);
-
-	}
-
-	/**
-	 * Set up create for tiles test
-	 * 
-	 * @param geoPackage
-	 * @throws SQLException
-	 * @throws IOException
-	 */
-	private static void setUpCreateTiles(GeoPackage geoPackage)
-			throws SQLException, IOException {
-
-		// Get existing SRS objects
-		SpatialReferenceSystemDao srsDao = geoPackage
-				.getSpatialReferenceSystemDao();
-
-		SpatialReferenceSystem epsgSrs = srsDao.queryForId(4326l);
-
-		TestCase.assertNotNull(epsgSrs);
-
-		// Create the Tile Matrix Set and Tile Matrix tables
-		geoPackage.createTileMatrixSetTable();
-		geoPackage.createTileMatrixTable();
-
-		// Create new Contents
-		ContentsDao contentsDao = geoPackage.getContentsDao();
-
-		Contents contents = new Contents();
-		contents.setTableName("test_tiles");
-		contents.setDataType(ContentsDataType.TILES);
-		contents.setIdentifier("test_tiles");
-		// contents.setDescription("");
-		contents.setLastChange(new Date());
-		contents.setMinX(-180.0);
-		contents.setMinY(-90.0);
-		contents.setMaxX(180.0);
-		contents.setMaxY(90.0);
-		contents.setSrs(epsgSrs);
-
-		// Create the user tile table
-		TileTable tileTable = TestUtils.buildTileTable(contents.getTableName());
-		geoPackage.createTileTable(tileTable);
-
-		// Create the contents
-		contentsDao.create(contents);
-
-		// Create new Tile Matrix Set
-		TileMatrixSetDao tileMatrixSetDao = geoPackage.getTileMatrixSetDao();
-
-		TileMatrixSet tileMatrixSet = new TileMatrixSet();
-		tileMatrixSet.setContents(contents);
-		tileMatrixSet.setSrs(contents.getSrs());
-		tileMatrixSet.setMinX(contents.getMinX());
-		tileMatrixSet.setMinY(contents.getMinY());
-		tileMatrixSet.setMaxX(contents.getMaxX());
-		tileMatrixSet.setMaxY(contents.getMaxY());
-		tileMatrixSetDao.create(tileMatrixSet);
-
-		// Create new Tile Matrix rows
-		TileMatrixDao tileMatrixDao = geoPackage.getTileMatrixDao();
-
-		int matrixWidthAndHeight = 2;
-		double pixelXSize = 69237.2;
-		double pixelYSize = 68412.1;
-
-		byte[] tileData = TestUtils.getTileBytes();
-		final int tileWidth = 256;
-		final int tileHeight = 256;
-
-		for (int zoom = 0; zoom < CREATE_TILE_MATRIX_COUNT; zoom++) {
-
-			TileMatrix tileMatrix = new TileMatrix();
-			tileMatrix.setContents(contents);
-			tileMatrix.setZoomLevel(zoom);
-			tileMatrix.setMatrixWidth(matrixWidthAndHeight);
-			tileMatrix.setMatrixHeight(matrixWidthAndHeight);
-			tileMatrix.setTileWidth(tileWidth);
-			tileMatrix.setTileHeight(tileHeight);
-			tileMatrix.setPixelXSize(pixelXSize);
-			tileMatrix.setPixelYSize(pixelYSize);
-			tileMatrixDao.create(tileMatrix);
-
-			matrixWidthAndHeight *= 2;
-			pixelXSize /= 2.0;
-			pixelYSize /= 2.0;
-
-			// Populate the tile table with rows
-			TestUtils.addRowsToTileTable(geoPackage, tileMatrix, tileData);
-		}
 
 	}
 

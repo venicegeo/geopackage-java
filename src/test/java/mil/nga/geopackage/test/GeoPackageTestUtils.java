@@ -14,11 +14,6 @@ import mil.nga.geopackage.features.user.FeatureColumn;
 import mil.nga.geopackage.features.user.FeatureDao;
 import mil.nga.geopackage.features.user.FeatureRow;
 import mil.nga.geopackage.schema.TableColumnKey;
-import mil.nga.geopackage.tiles.matrix.TileMatrix;
-import mil.nga.geopackage.tiles.matrix.TileMatrixDao;
-import mil.nga.geopackage.tiles.matrixset.TileMatrixSet;
-import mil.nga.geopackage.tiles.matrixset.TileMatrixSetDao;
-import mil.nga.geopackage.tiles.user.TileDao;
 import mil.nga.sf.GeometryEnvelope;
 import mil.nga.sf.GeometryType;
 
@@ -232,10 +227,8 @@ public class GeoPackageTestUtils {
 
 		GeometryColumnsDao geometryColumnsDao = geoPackage
 				.getGeometryColumnsDao();
-		TileMatrixSetDao tileMatrixSetDao = geoPackage.getTileMatrixSetDao();
 
-		TestCase.assertTrue(geometryColumnsDao.isTableExists()
-				|| tileMatrixSetDao.isTableExists());
+		TestCase.assertTrue(geometryColumnsDao.isTableExists());
 
 		if (geometryColumnsDao.isTableExists()) {
 
@@ -247,24 +240,6 @@ public class GeoPackageTestUtils {
 			geoPackage.dropTable(GeometryColumns.TABLE_NAME);
 
 			TestCase.assertFalse(geometryColumnsDao.isTableExists());
-		}
-
-		if (tileMatrixSetDao.isTableExists()) {
-			TileMatrixDao tileMatrixDao = geoPackage.getTileMatrixDao();
-
-			TestCase.assertTrue(tileMatrixSetDao.isTableExists());
-			TestCase.assertTrue(tileMatrixDao.isTableExists());
-
-			for (String tileTable : geoPackage.getTileTables()) {
-				TileDao tileDao = geoPackage.getTileDao(tileTable);
-				tileDao.dropTable();
-			}
-
-			geoPackage.dropTable(TileMatrix.TABLE_NAME);
-			geoPackage.dropTable(TileMatrixSet.TABLE_NAME);
-
-			TestCase.assertFalse(tileMatrixSetDao.isTableExists());
-			TestCase.assertFalse(tileMatrixDao.isTableExists());
 		}
 	}
 

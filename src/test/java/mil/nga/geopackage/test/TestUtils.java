@@ -30,11 +30,6 @@ import mil.nga.geopackage.schema.columns.DataColumnsDao;
 import mil.nga.geopackage.schema.constraints.DataColumnConstraintType;
 import mil.nga.geopackage.schema.constraints.DataColumnConstraints;
 import mil.nga.geopackage.schema.constraints.DataColumnConstraintsDao;
-import mil.nga.geopackage.tiles.matrix.TileMatrix;
-import mil.nga.geopackage.tiles.user.TileColumn;
-import mil.nga.geopackage.tiles.user.TileDao;
-import mil.nga.geopackage.tiles.user.TileRow;
-import mil.nga.geopackage.tiles.user.TileTable;
 import mil.nga.sf.Geometry;
 import mil.nga.sf.GeometryType;
 import mil.nga.sf.LineString;
@@ -144,21 +139,6 @@ public class TestUtils {
 				GeoPackageDataType.INTEGER, false, null));
 
 		FeatureTable table = new FeatureTable(tableName, columns);
-
-		return table;
-	}
-
-	/**
-	 * Build an example tile table
-	 * 
-	 * @param tableName
-	 * @return tile table
-	 */
-	public static TileTable buildTileTable(String tableName) {
-
-		List<TileColumn> columns = TileTable.createRequiredColumns();
-
-		TileTable table = new TileTable(tableName, columns);
 
 		return table;
 	}
@@ -275,36 +255,6 @@ public class TestUtils {
 			}
 			dao.create(newRow);
 		}
-	}
-
-	/**
-	 * Add rows to the tile table
-	 *
-	 * @param geoPackage
-	 * @param tileMatrix
-	 * @param tileData
-	 */
-	public static void addRowsToTileTable(GeoPackage geoPackage,
-			TileMatrix tileMatrix, byte[] tileData) {
-
-		TileDao dao = geoPackage.getTileDao(tileMatrix.getTableName());
-
-		for (int column = 0; column < tileMatrix.getMatrixWidth(); column++) {
-
-			for (int row = 0; row < tileMatrix.getMatrixHeight(); row++) {
-
-				TileRow newRow = dao.newRow();
-
-				newRow.setZoomLevel(tileMatrix.getZoomLevel());
-				newRow.setTileColumn(column);
-				newRow.setTileRow(row);
-				newRow.setTileData(tileData);
-
-				dao.create(newRow);
-			}
-
-		}
-
 	}
 
 	/**
